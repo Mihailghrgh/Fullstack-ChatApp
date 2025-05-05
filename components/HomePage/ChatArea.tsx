@@ -1,61 +1,36 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// Dummy data for messages
-const messages = [
-  {
-    id: 1,
-    sender: "Emma Wilson",
-    content: "Hey there! How's it going?",
-    time: "12:30 PM",
-    isMine: false,
-  },
-  {
-    id: 2,
-    sender: "You",
-    content: "Hi Emma! I'm doing well, thanks for asking. How about you?",
-    time: "12:32 PM",
-    isMine: true,
-  },
-  {
-    id: 3,
-    sender: "Emma Wilson",
-    content: "I'm great! Just working on that project we discussed last week.",
-    time: "12:33 PM",
-    isMine: false,
-  },
-  {
-    id: 4,
-    sender: "You",
-    content: "Oh nice! How's the progress so far?",
-    time: "12:34 PM",
-    isMine: true,
-  },
-  {
-    id: 5,
-    sender: "Emma Wilson",
-    content:
-      "It's coming along well. I've completed the first phase and now moving to the second part. Would you like to see what I've done so far?",
-    time: "12:36 PM",
-    isMine: false,
-  },
-];
+import { useMediaQuery } from "usehooks-ts";
+import { useEffect , useState} from "react";
+import MobileSideBar from "./MobileSideBar";
+import { messages } from "@/utils/Messages";
 
 export default function ChatArea() {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const mobile = useMediaQuery("(max-width: 768px)");
+
+  useEffect(() => {
+    setSidebarOpen(mobile);
+  }, [mobile]);
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Chat header */}
-      <div className="flex items-center border-b p-4 dark:border-gray-800">
-        <Avatar className="h-10 w-10">
-          <AvatarImage
-            src="/placeholder.svg?height=40&width=40"
-            alt="Emma Wilson"
-          />
-          <AvatarFallback>EW</AvatarFallback>
-        </Avatar>
-        <div className="ml-3">
-          <p className="font-medium">Emma Wilson</p>
-          <p className="text-xs text-gray-500">Online</p>
+      <div className="flex justify-between border-b p-4 dark:border-gray-800">
+        <div className="flex items-center">
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src="/placeholder.svg?height=40&width=40"
+              alt="Emma Wilson"
+            />
+            <AvatarFallback>EW</AvatarFallback>
+          </Avatar>
+
+          <div className="ml-3">
+            <p className="font-medium">Emma Wilson</p>
+            <p className="text-xs text-gray-500">Online</p>
+          </div>
         </div>
+        {sidebarOpen && <MobileSideBar />}
       </div>
 
       {/* Messages */}

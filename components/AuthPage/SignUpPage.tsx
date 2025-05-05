@@ -1,12 +1,9 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,7 +22,6 @@ export default function SignUpForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
-  const router = useRouter();
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -50,12 +46,8 @@ export default function SignUpForm() {
     }
 
     setIsLoading(true);
-
-    // Simulate registration delay
     setTimeout(() => {
       setIsLoading(false);
-      // Navigate to dashboard or verification page after successful registration
-      // router.push("/verification")
     }, 1500);
   };
 

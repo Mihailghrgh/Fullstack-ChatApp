@@ -3,45 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
-
-// Dummy data for contacts
-const contacts = [
-  {
-    id: 1,
-    name: "Emma Wilson",
-    avatar: "/placeholder.svg?height=40&width=40",
-    status: "online",
-    lastMessage: "Hey, how are you?",
-  },
-  {
-    id: 2,
-    name: "James Rodriguez",
-    avatar: "/placeholder.svg?height=40&width=40",
-    status: "online",
-    lastMessage: "Can we meet tomorrow?",
-  },
-  {
-    id: 3,
-    name: "Olivia Martinez",
-    avatar: "/placeholder.svg?height=40&width=40",
-    status: "offline",
-    lastMessage: "Thanks for your help!",
-  },
-  {
-    id: 4,
-    name: "Noah Thompson",
-    avatar: "/placeholder.svg?height=40&width=40",
-    status: "online",
-    lastMessage: "I'll send you the files",
-  },
-  {
-    id: 5,
-    name: "Sophia Lee",
-    avatar: "/placeholder.svg?height=40&width=40",
-    status: "offline",
-    lastMessage: "Let's discuss this later",
-  },
-];
+import { contacts } from "@/utils/ThrowAwayData";
 
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
