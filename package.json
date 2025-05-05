@@ -10,6 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/elements": "^0.23.22",
+    "@clerk/nextjs": "^6.18.5",
+    "@radix-ui/react-slot": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "express": "^5.1.0",

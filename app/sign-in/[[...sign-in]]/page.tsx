@@ -1,20 +1,9 @@
 "use client";
 
-import { SignIn } from "@clerk/nextjs";
+import * as Clerk from "@clerk/elements/common";
+import * as SignIn from "@clerk/elements/sign-in";
 
-export default function Home() {
-  // const socket = io();
-
-  // useEffect(() => {
-  //   socket.on("do_something", () => {
-  //     console.log("Clicked from the front end");
-  //   });
-
-  //   // return () => {
-  //   //   socket.off("do_something");
-  //   // };
-  // }, []);
-
+function SignInPage() {
   return (
     <SignIn.Root>
       <SignIn.Step
@@ -30,11 +19,11 @@ export default function Home() {
             Google
           </Clerk.Connection>
           <Clerk.Connection
-            name="github"
+            name="apple"
             className="flex items-center gap-x-3 justify-center font-medium border shadow-sm py-1.5 px-2.5 rounded-md"
           >
             <Clerk.Icon className="size-4" />
-            GitHub
+            Apple
           </Clerk.Connection>
         </div>
         <Clerk.Field name="identifier" className="space-y-2">
@@ -52,3 +41,4 @@ export default function Home() {
     </SignIn.Root>
   );
 }
+export default SignInPage;

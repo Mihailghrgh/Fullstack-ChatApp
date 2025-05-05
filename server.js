@@ -11,7 +11,6 @@ const nextApp = next({ dev, hostname, port });
 const nextHandler = nextApp.getRequestHandler();
 
 nextApp.prepare().then(() => {
-
   const app = express();
 
   app.get("/api/hello", (req, res) => {
@@ -27,36 +26,28 @@ nextApp.prepare().then(() => {
     res.status(200).json({ status: "ok", server: "running" });
   });
 
+  app.use((req, res) => {
+    return nextHandler(req, res);
+  });
+
   const httpServer = createServer(app);
   const io = new Server(httpServer);
 
   io.on("connection", (socket) => {
-    console.log("Connection established with server: ", socket.id);
+    console.log("Connection Established......", socket.id);
 
-
-    socket.emit("welcome", {
-      message: "Connected to the server!",
-      socketId: socket.id,
+    socket.on("client_ready", (data) => {
+      console.log(data);
     });
 
-
-    socket.on("message", (data) => {
-      console.log("Message received:", data);
-
-      io.emit("newMessage", {
-        id: socket.id,
-        data: data,
-        timestamp: new Date().toISOString(),
-      });
+    socket.on("button", (data) => {
+      // console.log(data);
+      io.emit("do_something");
     });
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
     });
-  });
-
-  app.use((req, res) => {
-    return nextHandler(req, res);
   });
 
   httpServer
