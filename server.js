@@ -13,13 +13,13 @@ const nextHandler = nextApp.getRequestHandler();
 nextApp.prepare().then(() => {
   const app = express();
 
-  app.get("/api/hello", (req, res) => {
-    res.json({ message: "Hello from Express API!" });
-  });
-
   app.use((req, res, next) => {
     console.log(`Request: ${req.method} ${req.url}`);
     next();
+  });
+
+  app.get("/api/hello", (req, res) => {
+    res.json({ message: "Hello from Express API!" });
   });
 
   app.get("/api/health", (req, res) => {
@@ -40,9 +40,8 @@ nextApp.prepare().then(() => {
       console.log(data);
     });
 
-    socket.on("button", (data) => {
-      // console.log(data);
-      io.emit("do_something");
+    socket.on("button", () => {
+      io.emit("do");
     });
 
     socket.on("disconnect", () => {
