@@ -36,13 +36,11 @@ nextApp.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("Connection Established......", socket.id);
 
-    socket.on("client_ready", (data) => {
+    socket.on("send_message", (data) => {
       console.log(data);
+      socket.broadcast.emit('received_message', data)
     });
 
-    socket.on("button", () => {
-      io.emit("do");
-    });
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);

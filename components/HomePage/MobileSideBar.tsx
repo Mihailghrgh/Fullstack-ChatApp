@@ -11,7 +11,6 @@ import {
 import { useTheme } from "next-themes";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
-import { contacts } from "@/utils/ThrowAwayData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function MobileSideBar() {
@@ -53,7 +52,7 @@ function MobileSideBar() {
 
             {/* Contacts list */}
             <div className="flex-1 overflow-y-auto">
-              {contacts.map((contact) => (
+              {/* {contacts.map((contact) => (
                 <div
                   key={contact.id}
                   className="flex items-center gap-3 border-b p-4 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-900"
@@ -85,7 +84,7 @@ function MobileSideBar() {
                     </p>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
           </SheetDescription>
         </SheetHeader>

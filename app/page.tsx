@@ -1,7 +1,6 @@
 "use client";
 
 import ChatArea from "@/components/HomePage/ChatArea";
-import MessageInput from "@/components/HomePage/MessageInput";
 import Sidebar from "@/components/HomePage/Sidebar";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
@@ -18,7 +17,6 @@ export default function Home() {
       {sidebarOpen && <Sidebar />}
       <div className="flex flex-1 flex-col">
         <ChatArea />
-        <MessageInput />
       </div>
     </div>
   );

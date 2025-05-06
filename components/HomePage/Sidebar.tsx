@@ -3,26 +3,39 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
-import { contacts } from "@/utils/ThrowAwayData";
+import { useClerk } from "@clerk/nextjs";
 
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
-
-  console.log(theme);
+  const { signOut } = useClerk();
 
   return (
     <div className="flex h-full w-80 flex-col border-r dark:border-gray-800">
       {/* Header with user info and search */}
       <div className="p-4">
-        <Button
-          variant="destructive"
-          onClick={() =>
-            theme === "dark" ? setTheme(() => "light") : setTheme(() => "dark")
-          }
-        >
-          {" "}
-          Toggle Theme{" "}
-        </Button>
+        <div className="flex justify-between">
+          <Button
+            variant="secondary"
+            className="hover:cursor-pointer"
+            onClick={() => {
+              signOut({ redirectUrl: "/sign-in" });
+            }}
+          >
+            Sign Out
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() =>
+              theme === "dark"
+                ? setTheme(() => "light")
+                : setTheme(() => "dark")
+            }
+          >
+            {" "}
+            Toggle Theme{" "}
+          </Button>
+        </div>
+
         <h2 className="mb-4 text-xl font-bold">Messages</h2>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -36,7 +49,7 @@ export default function Sidebar() {
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
-        {contacts.map((contact) => (
+        {/* {contacts.map((contact) => (
           <div
             key={contact.id}
             className="flex items-center gap-3 border-b p-4 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-900"
@@ -68,7 +81,7 @@ export default function Sidebar() {
               </p>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </div>
   );
