@@ -2,6 +2,7 @@ import express from "express";
 import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
+import cors from "cors";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -12,6 +13,8 @@ const nextHandler = nextApp.getRequestHandler();
 
 nextApp.prepare().then(() => {
   const app = express();
+
+  app.use(cors());
 
   app.use((req, res, next) => {
     console.log(`Request: ${req.method} ${req.url}`);
@@ -38,9 +41,8 @@ nextApp.prepare().then(() => {
 
     socket.on("send_message", (data) => {
       console.log(data);
-      socket.broadcast.emit('received_message', data)
+      socket.broadcast.emit("received_message", data);
     });
-
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);

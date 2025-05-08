@@ -7,23 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import { useChatStore } from "@/utils/store";
 import { io } from "socket.io-client";
+import { useUser } from "@clerk/nextjs";
+import { Message } from "@/utils/store";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
   const { addMessage } = useChatStore();
+  const { user } = useUser();
   const socket = io();
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const emailAddress = user?.primaryEmailAddress?.emailAddress;
 
-    const msg = {
-      id: 123,
-      sender: "Mihail",
+    const msg: Message = {
+      id: user?.id as string,
+      sender: user?.fullName ?? (emailAddress?.toUpperCase() as string),
       content: message,
-      time: "Today...",
-      isMine: false,
+      time: new Date().toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      }),
     };
 
-    socket.emit("send_message" , msg)
+    socket.emit("send_message", msg);
     addMessage(msg);
     setMessage("");
   };
@@ -35,6 +42,7 @@ export default function MessageInput() {
   return (
     <div className="border-t p-4 dark:border-gray-800">
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        <Input hidden type="file" />
         <Button
           type="button"
           size="icon"
@@ -42,8 +50,8 @@ export default function MessageInput() {
           className="h-9 w-9 rounded-full"
         >
           <Paperclip className="h-5 w-5" />
-          <span className="sr-only">Attach file</span>
         </Button>
+
         <Input
           value={message}
           onChange={(e) => userTyping(e.target.value)}
@@ -52,6 +60,7 @@ export default function MessageInput() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+              handleSubmit(e);
             }
           }}
         />
@@ -59,13 +68,14 @@ export default function MessageInput() {
           type="button"
           size="icon"
           variant="ghost"
-          className="h-9 w-9 rounded-full "
+          className="h-9 w-9 rounded-full"
         >
           <Smile className="h-5 w-5" />
           <span className="sr-only">Add emoji</span>
         </Button>
         <Button
           type="submit"
+          disabled={message.trim() === ""}
           size="icon"
           className="h-9 w-9 rounded-full focus:bg-sidebar-ring hover:cursor-pointer"
         >

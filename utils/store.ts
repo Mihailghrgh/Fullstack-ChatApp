@@ -1,11 +1,10 @@
 import { create } from "zustand";
 
-type Message = {
-  id: number;
+export type Message = {
+  id: string;
   sender: string;
   content: string;
   time: string;
-  isMine: boolean;
 };
 
 type ChatStore = {
@@ -15,6 +14,5 @@ type ChatStore = {
 
 export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
-  addMessage: (msg) =>
-    set((state) => ({ messages: [...state.messages, msg] })),
+  addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
 }));

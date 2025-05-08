@@ -9,11 +9,11 @@ datasource db {
 }
 
 model Users{
-    id String @id @default(uuid())
-    name String
+    id String @id 
     image String
-    clerkId String
+    email String
     message Message []
+    createdAt DateTime @default(now())
 }
 
 model Message{
@@ -22,6 +22,6 @@ model Message{
     receiver_id String
     user Users @relation(fields: [sender_id], references: [id], onDelete: Cascade)
     message String
-    created_at DateTime @default(now())
+    createdAt DateTime @default(now())
     read Boolean
 }

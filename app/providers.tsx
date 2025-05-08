@@ -1,7 +1,7 @@
 "use client";
 import ThemeProvider from "./theme-provider";
 
-function Providers({ children }: { children: React.ReactNode }) {
+function ShadCnThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
@@ -10,4 +10,4 @@ function Providers({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-export default Providers;
+export default ShadCnThemeProvider;
