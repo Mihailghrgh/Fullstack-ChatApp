@@ -5,27 +5,39 @@ import Sidebar from "@/components/HomePage/Sidebar";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import axios from "axios";
-
+import { useQuery } from "@tanstack/react-query";
 
 export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const mobile = useMediaQuery("(max-width: 768px)");
 
-  const checkUser = async () => {
-    try {
-      await axios.post("/api/createUser");
-    } catch (error: any) {
-      console.log("Error details:", error.response);
-    }
-  };
-
   useEffect(() => {
     setSidebarOpen(!mobile);
   }, [mobile]);
 
-  useEffect(() => {
-    checkUser();
-  }, []);
+  const checkUser = async () => {
+    try {
+      const data = await axios.post("/api/createUser");
+
+      return data;
+    } catch (error: any) {
+      console.log("Error details:", error);
+    }
+  };
+
+  const { isLoading, isError, error } = useQuery({
+    queryKey: ["createUser"],
+    queryFn: checkUser,
+  });
+
+  if (isLoading) {
+    return <h1>Loading....</h1>;
+  }
+
+  if (isError) {
+    console.log(error);
+    return <h3>ERROR....</h3>;
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-950">

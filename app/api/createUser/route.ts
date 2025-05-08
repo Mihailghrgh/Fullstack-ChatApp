@@ -1,27 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/prisma/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { users } from "@/schema/schema";
+import { eq } from "drizzle-orm";
 
-export async function POST(request: NextRequest) {
+export async function POST(_req: NextRequest) {
   const user = await currentUser();
-
-  console.log("Here is the data: ", user);
-
+  const id = user?.id as string;
   try {
-    const existingUser = await db.users.findUnique({ where: { id: user?.id } });
+    console.log("Create User.........");
 
-    if (existingUser === null) {
-      await db.users.create({
-        data: {
-          image: user?.imageUrl as string,
-          id: user?.id as string,
-          email: user?.emailAddresses[0].emailAddress as string,
-        },
+    const existingUsers = await db.select().from(users).where(eq(users.id , id));
+
+    console.log("Existing User...", existingUsers);
+
+    if (existingUsers.length === 0) {
+      const data = await db.insert(users).values({
+        id: user?.id as string,
+        email: user?.emailAddresses[0].emailAddress as string,
+        image: user?.imageUrl as string,
       });
+
+      console.log("Created data: ", data);
 
       return NextResponse.json("User created!");
     }
   } catch (error: any) {
+    throw new Error("Error: ", error.data);
     return NextResponse.json("Error occurred: ", error);
   }
 

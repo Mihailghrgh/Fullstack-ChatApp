@@ -9,5 +9,6 @@ export default async function Home() {
   if (!userId) {
     redirect("/sign-in");
   }
+  
   return <ChatPage />;
 }

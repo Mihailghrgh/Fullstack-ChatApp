@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/elements": "^0.23.22",
     "@clerk/nextjs": "^6.18.5",
+    "@neondatabase/serverless": "^1.0.0",
     "@prisma/client": "^6.7.0",
     "@radix-ui/react-avatar": "^1.1.8",
     "@radix-ui/react-checkbox": "^1.2.3",
@@ -26,11 +27,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.43.1",
     "express": "^5.1.0",
     "is-mobile": "^5.0.0",
     "lucide-react": "^0.503.0",
     "next": "15.3.1",
     "next-themes": "^0.4.6",
+    "pg": "^8.15.6",
+    "postgres": "^3.4.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "socket.io": "^4.8.1",
@@ -45,12 +49,14 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.1",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
     "nodemon": "^3.1.10",
     "prisma": "^6.7.0",
     "tailwindcss": "^4",
+    "tsx": "^4.19.4",
     "tw-animate-css": "^1.2.8",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   }
 }

@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/prisma/db";
-export async function GET(req: NextRequest) {
+import { db } from "@/lib/db";
+import { users } from "@/schema/schema";
+import { desc } from "drizzle-orm";
+
+export async function GET(_req: NextRequest) {
   try {
-    const data = await db.users.findMany({ orderBy: { createdAt: "desc" } });
+    const data = await db.select().from(users).orderBy(desc(users.createdAt));
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (error: any) {
     console.log("Error: ", error);
-    return NextResponse.json(error);
+    throw new Error("Error...: ", error.message);
   }
 }
