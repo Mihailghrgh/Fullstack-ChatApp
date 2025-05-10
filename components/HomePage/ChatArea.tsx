@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import MobileSideBar from "./MobileSideBar";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
-
+import { useRef } from "react";
 
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
