@@ -24,6 +24,7 @@ export const conversation = pgTable("Conversation", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   room_id: text("room_id").notNull().unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  name: text("name"),
 });
 
 export const conversationParticipants = pgTable("conversationParticipants", {

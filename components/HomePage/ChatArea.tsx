@@ -1,10 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMediaQuery } from "usehooks-ts";
 import { useEffect, useState } from "react";
-import MobileSideBar from "./MobileSideBar";
+import MobileSideBar from "../Sidebar/MobileSideBar";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
-import { useRef } from "react";
 
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState(true);

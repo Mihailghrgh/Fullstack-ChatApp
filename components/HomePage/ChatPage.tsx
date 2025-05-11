@@ -1,7 +1,7 @@
 "use client";
 
 import ChatArea from "@/components/HomePage/ChatArea";
-import Sidebar from "@/components/HomePage/Sidebar";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import axios from "axios";

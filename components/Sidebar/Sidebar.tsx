@@ -1,7 +1,6 @@
 "use client";
-import { Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+import { Sun, Moon, ArrowBigLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
 import axios from "axios";
@@ -9,24 +8,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
 import { Users } from "@prisma/client";
 import { setActiveChatPage } from "@/utils/store";
+import AddNewContact from "./AddNewContact";
 
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
   const { signOut } = useClerk();
   const { setActivePage } = setActiveChatPage();
 
-  const createRoom = async (item: string) => {
-    try {
-      await axios.post("/api/createRoom", { id: item });
-    } catch (error: any) {
-      console.log("error occurred: ", error);
-      throw new Error("Something happened,", error);
-    }
-  };
-
   const fetchAllUsers = async () => {
     try {
-      const { data } = await axios.get("/api/getAllUsers");
+      const { data } = await axios.get("/api/getAllConversations");
       return data;
     } catch (error) {
       console.log(error);
@@ -59,67 +50,52 @@ export default function Sidebar() {
               signOut({ redirectUrl: "/sign-in" });
             }}
           >
-            Sign Out
+            <ArrowBigLeft />
           </Button>
           <Button
             variant="destructive"
+            className="hover:cursor-pointer"
             onClick={() =>
               theme === "dark"
                 ? setTheme(() => "light")
                 : setTheme(() => "dark")
             }
           >
-            {" "}
-            Toggle Theme{" "}
+            {theme === "light" ? <Sun /> : <Moon />}
           </Button>
-        </div>
-        <h2 className="mb-4 text-xl font-bold">Messages</h2>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            type="text"
-            placeholder="Search contacts..."
-            className="pl-8"
-          />
+          <AddNewContact />
         </div>
       </div>
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
-        {data.map((contact: Users) => (
+        {data.map((conversation) => (
           <div
             onClick={() => {
-              setActivePage(contact.email);
-              createRoom(contact.id);
+              setActivePage(conversation.name);
             }}
-            key={contact.id}
+            key={conversation.id}
             className="flex items-center gap-3 border-b p-4 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-900"
           >
             <div className="relative">
               <Avatar>
                 <AvatarImage
-                  src={contact.image || "/placeholder.svg"}
-                  alt={contact.email}
+                  src={conversation.image || "/placeholder.svg"}
+                  alt={conversation.name}
                 />
                 <AvatarFallback>
-                  {contact.email
+                  {conversation.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
-              {/* {contact.status === "online" && (
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-950"></span>
-              )} */}
             </div>
             <div className="flex-1 overflow-hidden">
               <div className="flex items-center justify-between">
-                <p className="font-medium">{contact.email}</p>
+                <p className="font-medium">{conversation.name}</p>
                 <p className="text-xs text-gray-500">12:34 PM</p>
               </div>
-              {/* <p className="truncate text-sm text-gray-500">
-                {contact.lastMessage}
-              </p> */}
             </div>
           </div>
         ))}
