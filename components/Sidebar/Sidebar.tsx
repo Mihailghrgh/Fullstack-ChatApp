@@ -1,13 +1,12 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Sun, Moon, ArrowBigLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
-import { Users } from "@prisma/client";
-import { setActiveChatPage } from "@/utils/store";
+import { Chat, setActiveChatPage } from "@/utils/store";
 import AddNewContact from "./AddNewContact";
 
 export default function Sidebar() {
@@ -69,36 +68,40 @@ export default function Sidebar() {
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
-        {data.map((conversation) => (
-          <div
-            onClick={() => {
-              setActivePage(conversation.name);
-            }}
-            key={conversation.id}
-            className="flex items-center gap-3 border-b p-4 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-900"
-          >
-            <div className="relative">
-              <Avatar>
-                <AvatarImage
-                  src={conversation.image || "/placeholder.svg"}
-                  alt={conversation.name}
-                />
-                <AvatarFallback>
-                  {conversation.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="flex items-center justify-between">
-                <p className="font-medium">{conversation.name}</p>
-                <p className="text-xs text-gray-500">12:34 PM</p>
+        {data.map((conversation) => {
+          return conversation.map((item) => {
+
+            const data: Chat = {
+              name: item.name,
+              image: item.image,
+              id: item.id,
+              room_Id: item.room_id,
+            };
+
+            return (
+              <div
+                id={item.id}
+                key={item.id}
+                className="flex items-center gap-3 border-b p-4 hover:bg-accent hover:cursor-pointer"
+                onClick={() => {
+                  setActivePage(data);
+                }}
+              >
+                <div className="relative">
+                  <Avatar>
+                    <AvatarImage src={item.image} alt={item.name} />
+                  </Avatar>
+                </div>
+                <h1>{item.name.split("@")[0]}</h1>
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500">12:34 PM</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          });
+        })}
       </div>
     </div>
   );

@@ -1,14 +1,49 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useChatStore } from "@/utils/store";
+import { Message, useChatStore } from "@/utils/store";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef } from "react";
 import { io } from "socket.io-client";
+import { useQuery } from "@tanstack/react-query";
+import { setActiveChatPage } from "@/utils/store";
+import axios from "axios";
 
 function Messages() {
   const { messages, addMessage } = useChatStore();
+  const { activeChat } = setActiveChatPage();
   const { user } = useUser();
   const socket = io();
   const newestMessage = useRef<HTMLDivElement>(null);
+
+  const fetchMessage = async () => {
+    try {
+      const { data } = await axios.get("/api/getMessage", {
+        params: { id: activeChat.id },
+      });
+
+      const message: Message = data.map((item) => {
+        const id = item.id;
+        const sender = item.email;
+        const sender_id = item.sender_id;
+        const content = item.message;
+        const time = item.createdAt;
+        const chat_Id = item.conversation_id;
+        const msg: Message = { id, sender, sender_id, content, time, chat_Id };
+
+        console.log(sender_id, user?.id);
+
+        addMessage(msg);
+      });
+
+      return message;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["message", activeChat.id],
+    queryFn: fetchMessage,
+  });
 
   useEffect(() => {
     socket.on("received_message", (data) => {
@@ -35,7 +70,7 @@ function Messages() {
               ref={newestMessage}
               key={i}
               className={`flex ${
-                user?.id === message.id ? "justify-end" : "justify-start"
+                user?.id === message.sender_id ? "justify-end" : "justify-start"
               }`}
             >
               <div className="flex max-w-[70%]">
@@ -56,7 +91,7 @@ function Messages() {
                 <div>
                   <div
                     className={`rounded-lg p-3 ${
-                      user?.id === message.id
+                      user?.id === message.sender_id
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     }`}

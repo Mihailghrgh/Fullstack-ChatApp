@@ -9,30 +9,39 @@ import { useChatStore } from "@/utils/store";
 import { io } from "socket.io-client";
 import { useUser } from "@clerk/nextjs";
 import { Message } from "@/utils/store";
+import axios from "axios";
+import { setActiveChatPage } from "@/utils/store";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
   const { addMessage } = useChatStore();
   const { user } = useUser();
   const socket = io();
+  const { activeChat } = setActiveChatPage();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const emailAddress = user?.primaryEmailAddress?.emailAddress;
 
     const msg: Message = {
       id: user?.id as string,
       sender: user?.fullName ?? (emailAddress?.toUpperCase() as string),
+      sender_id: user?.id as string,
       content: message,
       time: new Date().toLocaleTimeString([], {
         hour: "numeric",
         minute: "2-digit",
       }),
+      chat_Id: activeChat.id,
     };
+
+    console.log(msg);
 
     socket.emit("send_message", msg);
     addMessage(msg);
     setMessage("");
+
+    await axios.post("/api/sendMessage", { message: msg });
   };
 
   const userTyping = (e: string) => {
@@ -54,6 +63,7 @@ export default function MessageInput() {
 
         <Input
           value={message}
+          id="message"
           onChange={(e) => userTyping(e.target.value)}
           placeholder="Type a message..."
           className="min-h-[2.5rem] flex-1 resize-none"

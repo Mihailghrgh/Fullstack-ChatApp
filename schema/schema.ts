@@ -13,7 +13,6 @@ export const messages = pgTable("Message", {
   sender_id: text("sender_id").notNull(),
   email: text("email").notNull(),
   message: text("message").notNull(),
-  image: text("image").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   conversation_id: uuid("conversation_id")
     .notNull()
@@ -24,7 +23,8 @@ export const conversation = pgTable("Conversation", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   room_id: text("room_id").notNull().unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  name: text("name"),
+  name: text("name").notNull(),
+  image: text("image").notNull(),
 });
 
 export const conversationParticipants = pgTable("conversationParticipants", {

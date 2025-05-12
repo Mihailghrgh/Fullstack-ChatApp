@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 
 export async function POST(_req: NextRequest) {
   const data = await _req.json();
-  const { id } = data;
+  const { id, image, email } = data;
   const { userId } = await auth();
   const newRoom = `room_${userId}_${id}`;
 
@@ -17,7 +17,9 @@ export async function POST(_req: NextRequest) {
       .where(eq(conversation.room_id, newRoom));
 
     if (existingRoom.length === 0) {
-      await db.insert(conversation).values({ room_id: newRoom });
+      await db
+        .insert(conversation)
+        .values({ room_id: newRoom, name: email, image: image });
 
       await db.insert(conversationParticipants).values([
         { user_Id: id, room_id: newRoom },

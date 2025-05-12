@@ -3,8 +3,10 @@ import { create } from "zustand";
 export type Message = {
   id: string;
   sender: string;
+  sender_id: string, 
   content: string;
   time: string;
+  chat_Id: string;
 };
 
 type ChatStore = {
@@ -12,9 +14,16 @@ type ChatStore = {
   addMessage: (msg: Message) => void;
 };
 
+export type Chat = {
+  name: string;
+  image: string;
+  room_Id: string;
+  id: string;
+};
+
 type ActivePageStore = {
-  activeChatPage: string;
-  setActivePage: (item: string) => void;
+  activeChat: Chat;
+  setActivePage: (item1: Chat) => void;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -23,6 +32,6 @@ export const useChatStore = create<ChatStore>((set) => ({
 }));
 
 export const setActiveChatPage = create<ActivePageStore>((set) => ({
-  activeChatPage: "none",
-  setActivePage: (item: string) => set(() => ({ activeChatPage: item })),
+  activeChat: { name: "none", image: "none", room_Id: "none", id: "none" },
+  setActivePage: (item: Chat) => set(() => ({ activeChat: item })),
 }));

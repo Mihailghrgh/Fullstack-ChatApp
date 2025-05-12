@@ -1,0 +1,24 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { messages } from "@/schema/schema";
+import { eq } from "drizzle-orm";
+
+export async function GET(_req: NextRequest, _rep: NextResponse) {
+  try {
+    const { searchParams } = new URL(_req.url);
+    const id = searchParams.get("id");
+    console.log(id);
+
+    const data = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversation_id, id));
+
+    console.log(data);
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error occurred: ", error);
+  }
+}

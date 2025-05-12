@@ -4,9 +4,10 @@ import { Users } from "@prisma/client";
 import axios from "axios";
 
 function List({ data }: { data: Users[] }) {
-  const createRoom = async (item: string) => {
+
+  const createRoom = async (item: string , image: string ,email: string) => {
     try {
-      await axios.post("/api/createConversation", { id: item });
+      await axios.post("/api/createConversation", { id: item, image: image , email: email});
     } catch (error: any) {
       console.log("error occurred: ", error);
       throw new Error("Something happened,", error);
@@ -31,7 +32,7 @@ function List({ data }: { data: Users[] }) {
               variant="outline"
               size="sm"
               className="text-green-500 hover:cursor-pointer"
-              onClick={() => createRoom(contact.id)}
+              onClick={() => createRoom(contact.id , contact.image , contact.email)}
             >
               Chat
             </Button>
