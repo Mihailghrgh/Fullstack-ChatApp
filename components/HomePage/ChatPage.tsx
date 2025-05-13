@@ -6,13 +6,10 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { setActiveChatPage } from "@/utils/store";
 
 export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const mobile = useMediaQuery("(max-width: 768px)");
-  
-
   useEffect(() => {
     setSidebarOpen(!mobile);
   }, [mobile]);

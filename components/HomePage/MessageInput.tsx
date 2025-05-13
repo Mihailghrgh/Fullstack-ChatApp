@@ -32,7 +32,7 @@ export default function MessageInput() {
         hour: "numeric",
         minute: "2-digit",
       }),
-      chat_Id: activeChat.id,
+      chat_Id: activeChat?.id as string,
     };
 
     console.log(msg);

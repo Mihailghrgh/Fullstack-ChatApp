@@ -5,14 +5,30 @@ import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Chat, setActiveChatPage } from "@/utils/store";
 import AddNewContact from "./AddNewContact";
+
+type Conversation = {
+  createdAt: string;
+  id: string;
+  room_id: string;
+  participants: [
+    {
+      id: string;
+      userDetails: {
+        name: string;
+        image: string;
+      };
+    }
+  ];
+};
 
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
   const { signOut } = useClerk();
   const { setActivePage } = setActiveChatPage();
+  const { user } = useUser();
 
   const fetchAllUsers = async () => {
     try {
@@ -28,7 +44,6 @@ export default function Sidebar() {
   });
 
   if (isLoading) {
-    console.log("Loading...");
     return <div>Loading....</div>;
   }
 
@@ -36,7 +51,6 @@ export default function Sidebar() {
     console.log(error);
     return <div>Error....</div>;
   }
-
   return (
     <div className="flex h-full w-80 flex-col border-r dark:border-gray-800">
       {/* Header with user info and search */}
@@ -68,36 +82,49 @@ export default function Sidebar() {
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
-        {data.map((conversation) => {
-          return conversation.map((item) => {
+        {data.map((conversation: Conversation) => {
+          return conversation.participants.map((item) => {
+            console.log("item id: ", item.id);
+            console.log("active user id: ", user?.id);
 
-            const data: Chat = {
-              name: item.name,
-              image: item.image,
-              id: item.id,
-              room_Id: item.room_id,
-            };
+            const data: Chat =
+              user?.id !== item.id
+                ? {
+                    name: item.userDetails.name,
+                    image: item.userDetails.image,
+                    room_Id: conversation.room_id,
+                    id: conversation.id,
+                  }
+                : null;
 
+            console.log("Chat made: ", data);
             return (
-              <div
-                id={item.id}
-                key={item.id}
-                className="flex items-center gap-3 border-b p-4 hover:bg-accent hover:cursor-pointer"
-                onClick={() => {
-                  setActivePage(data);
-                }}
-              >
-                <div className="relative">
-                  <Avatar>
-                    <AvatarImage src={item.image} alt={item.name} />
-                  </Avatar>
-                </div>
-                <h1>{item.name.split("@")[0]}</h1>
-                <div className="flex-1 overflow-hidden">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-500">12:34 PM</p>
+              <div id={item.id} key={item.id}>
+                {user?.id !== item.id ? (
+                  <div
+                    id={item.id}
+                    key={item.id}
+                    className="flex items-center gap-3 border-b p-4 hover:bg-accent hover:cursor-pointer"
+                    onClick={() => {
+                      setActivePage(data);
+                    }}
+                  >
+                    <div className="relative">
+                      <Avatar>
+                        <AvatarImage
+                          src={item.userDetails.image}
+                          alt={item.userDetails.name}
+                        />
+                      </Avatar>
+                    </div>
+                    <h1>{item.userDetails.name.split("@")[0]}</h1>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">12:34 PM</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : null}
               </div>
             );
           });

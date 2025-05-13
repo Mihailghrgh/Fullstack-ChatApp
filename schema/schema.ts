@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const users = pgTable("Users", {
@@ -23,8 +23,7 @@ export const conversation = pgTable("Conversation", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   room_id: text("room_id").notNull().unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  name: text("name").notNull(),
-  image: text("image").notNull(),
+  participants: jsonb("participants").notNull(),
 });
 
 export const conversationParticipants = pgTable("conversationParticipants", {

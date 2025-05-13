@@ -3,7 +3,7 @@ import { create } from "zustand";
 export type Message = {
   id: string;
   sender: string;
-  sender_id: string, 
+  sender_id: string;
   content: string;
   time: string;
   chat_Id: string;
@@ -19,7 +19,7 @@ export type Chat = {
   image: string;
   room_Id: string;
   id: string;
-};
+} | null;
 
 type ActivePageStore = {
   activeChat: Chat;

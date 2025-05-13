@@ -25,11 +25,15 @@ function Messages() {
         const sender = item.email;
         const sender_id = item.sender_id;
         const content = item.message;
-        const time = item.createdAt;
+        const time =
+          new Date(item.createdAt).toLocaleDateString() +
+          " at " +
+          new Date(item.createdAt).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          });
         const chat_Id = item.conversation_id;
         const msg: Message = { id, sender, sender_id, content, time, chat_Id };
-
-        console.log(sender_id, user?.id);
 
         addMessage(msg);
       });
@@ -41,7 +45,7 @@ function Messages() {
   };
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["message", activeChat.id],
+    queryKey: ["message", activeChat?.id],
     queryFn: fetchMessage,
   });
 
