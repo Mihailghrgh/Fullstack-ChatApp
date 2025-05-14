@@ -69,8 +69,6 @@ export async function GET(_req: NextRequest) {
       })
     );
 
-    console.dir(finalConversation, { depth: null });
-
     return NextResponse.json(finalConversation);
   } catch (error: any) {
     console.log(error);

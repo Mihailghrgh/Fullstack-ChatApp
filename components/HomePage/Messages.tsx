@@ -2,22 +2,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message, useChatStore } from "@/utils/store";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef } from "react";
-import { io } from "socket.io-client";
 import { useQuery } from "@tanstack/react-query";
 import { setActiveChatPage } from "@/utils/store";
 import axios from "axios";
+// import { socket } from "../Socket/Socket";
+import { socket } from "./ChatArea";
 
 function Messages() {
   const { messages, addMessage } = useChatStore();
   const { activeChat } = setActiveChatPage();
   const { user } = useUser();
-  const socket = io();
   const newestMessage = useRef<HTMLDivElement>(null);
 
   const fetchMessage = async () => {
     try {
       const { data } = await axios.get("/api/getMessage", {
-        params: { id: activeChat.id },
+        params: { id: activeChat?.id },
       });
 
       const message: Message = data.map((item) => {
@@ -51,6 +51,7 @@ function Messages() {
 
   useEffect(() => {
     socket.on("received_message", (data) => {
+      console.log("received message");
       addMessage(data);
     });
 

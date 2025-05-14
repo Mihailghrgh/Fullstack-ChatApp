@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import cors from "cors";
+import userList from "./utils/userList.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -39,13 +40,31 @@ nextApp.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("Connection Established......", socket.id);
 
+    const userId = socket.handshake?.auth?.userId;
+
     socket.on("send_message", (data) => {
+      console.log("Sending message.....");
       socket.broadcast.emit("received_message", data);
     });
 
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
     });
+
+    if (!userId) {
+      console.log("No userId presented");
+    }
+
+    if (userList.has(userId)) {
+      console.log(`User ${userId} already connected. Skipping.`);
+      return;
+    }
+
+    if (userId) {
+      userList.set(userId, socket.id);
+      console.log("Socket and user", userId, " + ", socket.id);
+      console.log("Updated userlist, ", userList);
+    }
   });
 
   httpServer

@@ -7,7 +7,6 @@ function ContactList() {
   const fetchData = async () => {
     try {
       const { data } = await axios.get("/api/getAllUsers");
-
       return data;
     } catch (error: any) {
       console.log("Error occurred: ", error);

@@ -17,7 +17,6 @@ export default function ChatPage() {
   const checkUser = async () => {
     try {
       const data = await axios.post("/api/createUser");
-
       return data;
     } catch (error: any) {
       console.log("Error details:", error);

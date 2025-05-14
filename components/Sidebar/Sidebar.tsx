@@ -84,9 +84,6 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto">
         {data.map((conversation: Conversation) => {
           return conversation.participants.map((item) => {
-            console.log("item id: ", item.id);
-            console.log("active user id: ", user?.id);
-
             const data: Chat =
               user?.id !== item.id
                 ? {
@@ -96,8 +93,6 @@ export default function Sidebar() {
                     id: conversation.id,
                   }
                 : null;
-
-            console.log("Chat made: ", data);
             return (
               <div id={item.id} key={item.id}>
                 {user?.id !== item.id ? (

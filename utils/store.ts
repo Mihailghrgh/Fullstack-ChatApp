@@ -10,8 +10,9 @@ export type Message = {
 };
 
 type ChatStore = {
-  messages: Message[];
-  addMessage: (msg: Message) => void;
+  chats: Record<string, Message[]>;
+  addMessage: (userId: string, msg: Message) => void;
+  getMessages: (userId: string) => void;
 };
 
 export type Chat = {
@@ -26,9 +27,13 @@ type ActivePageStore = {
   setActivePage: (item1: Chat) => void;
 };
 
-export const useChatStore = create<ChatStore>((set) => ({
-  messages: [],
-  addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
+export const useChatStore = create<ChatStore>((set, get) => ({
+  chats: {},
+  addMessage: (userId: string, msg: Message) => {
+    const prev = get().chats[userId] || [];
+    set({ chats: { ...get().chats, [userId]: [...prev, msg] } });
+  },
+  getMessages: (userId: string) => get().chats[userId] || [],
 }));
 
 export const setActiveChatPage = create<ActivePageStore>((set) => ({

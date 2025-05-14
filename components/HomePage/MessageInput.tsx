@@ -6,17 +6,16 @@ import { Paperclip, Send, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import { useChatStore } from "@/utils/store";
-import { io } from "socket.io-client";
 import { useUser } from "@clerk/nextjs";
 import { Message } from "@/utils/store";
 import axios from "axios";
 import { setActiveChatPage } from "@/utils/store";
+import { socket } from "./ChatArea";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
   const { addMessage } = useChatStore();
   const { user } = useUser();
-  const socket = io();
   const { activeChat } = setActiveChatPage();
 
   const handleSubmit = async (e) => {
@@ -34,11 +33,7 @@ export default function MessageInput() {
       }),
       chat_Id: activeChat?.id as string,
     };
-
-    console.log(msg);
-
     socket.emit("send_message", msg);
-    addMessage(msg);
     setMessage("");
 
     await axios.post("/api/sendMessage", { message: msg });
