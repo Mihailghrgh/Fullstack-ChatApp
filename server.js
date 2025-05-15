@@ -39,17 +39,7 @@ nextApp.prepare().then(() => {
 
   io.on("connection", (socket) => {
     console.log("Connection Established......", socket.id);
-
     const userId = socket.handshake?.auth?.userId;
-
-    socket.on("send_message", (data) => {
-      console.log("Sending message.....");
-      socket.broadcast.emit("received_message", data);
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Client disconnected:", socket.id);
-    });
 
     if (!userId) {
       console.log("No userId presented");
@@ -65,6 +55,26 @@ nextApp.prepare().then(() => {
       console.log("Socket and user", userId, " + ", socket.id);
       console.log("Updated userlist, ", userList);
     }
+
+    socket.on("client_ready", () => {
+      console.log("User has connected successfully !");
+    });
+
+    socket.on("send_message", ({ to, msg }) => {
+      const targetSocketId = userList.get(to);
+
+      if (targetSocketId) {
+        socket.to(targetSocketId).emit("received_message", msg);
+      } else {
+        console.log("Unsuccessful");
+      }
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Client disconnected:", socket.id);
+      userList.delete(userId);
+    });
+
   });
 
   httpServer

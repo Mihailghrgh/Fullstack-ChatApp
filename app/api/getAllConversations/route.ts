@@ -69,6 +69,9 @@ export async function GET(_req: NextRequest) {
       })
     );
 
+    console.log("Checking final conversation: " , finalConversation);
+    
+
     return NextResponse.json(finalConversation);
   } catch (error: any) {
     console.log(error);

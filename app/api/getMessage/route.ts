@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { messages } from "@/schema/schema";
 import { eq } from "drizzle-orm";
 
-export async function GET(_req: NextRequest, _rep: NextResponse) {
+export async function GET(_req: NextRequest) {
   try {
     const { searchParams } = new URL(_req.url);
     const id = searchParams.get("id");
@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, _rep: NextResponse) {
     const data = await db
       .select()
       .from(messages)
-      .where(eq(messages.conversation_id, id));
+      .where(eq(messages.room_Id, id));
 
     return NextResponse.json(data);
   } catch (error) {

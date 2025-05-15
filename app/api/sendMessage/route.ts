@@ -9,9 +9,10 @@ export async function POST(_req: NextRequest, _res: NextResponse) {
 
     await db.insert(messages).values({
       sender_id: message.sender_id,
-      conversation_id: message.chat_Id,
+      room_Id: message.room_Id,
       email: message.sender,
       message: message.content,
+      sender_image: message.sender_image,
     });
 
     return NextResponse.json("Response");

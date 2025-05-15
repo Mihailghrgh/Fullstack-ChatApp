@@ -11,12 +11,11 @@ export const users = pgTable("Users", {
 export const messages = pgTable("Message", {
   id: uuid("id").defaultRandom().notNull(),
   sender_id: text("sender_id").notNull(),
+  sender_image: text("sender_image").notNull(),
   email: text("email").notNull(),
   message: text("message").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  conversation_id: uuid("conversation_id")
-    .notNull()
-    .references(() => conversation.id),
+  room_Id: text("room_Id").notNull(),
 });
 
 export const conversation = pgTable("Conversation", {
@@ -42,9 +41,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   sentMessages: many(messages),
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
-  conversation: one(conversation, {
-    fields: [messages.conversation_id],
-    references: [conversation.id],
-  }),
-}));
+// export const messagesRelations = relations(messages, ({ one }) => ({
+//   conversation: one(conversation, {
+//     fields: [messages.room_Id],
+//     references: [conversation.id],
+//   }),
+// }));

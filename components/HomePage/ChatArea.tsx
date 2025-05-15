@@ -10,7 +10,8 @@ import { useUser } from "@clerk/nextjs";
 // import { initializeSocket , socket} from "../Socket/Socket";
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-export let socket: Socket;
+import { socket } from "../Socket/Socket";
+// export let socket: Socket;
 
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -19,22 +20,18 @@ export default function ChatArea() {
 
   const { activeChat } = setActiveChatPage();
   useEffect(() => {
-    setSidebarOpen(mobile);
+    if (!socket.connected) {
+      socket.auth = { userId: user?.id };
+      socket.connect();
+      socket.emit("client_ready", "hello from client");
+    }
 
-    socket = io({
-      auth: { userId: user?.id },
-    });
-    // initializeSocket(user?.id as string);
+    return () => {
+      console.log("Component unmounted but socket stays alive");
+    };
+  }, [user?.id]);
 
-    // return () => {
-
-    //   if(socket){
-    //     socket.disconnect()
-    //   }
-    // }
-  }, [mobile]);
-
-  if (activeChat?.name === "none") {
+  if (activeChat?.room_id === "none") {
     return (
       <div className="flex-1 flex items-center justify-center flex-col p-4 text-center">
         <div className="mb-4 p-6 bg-muted rounded-full">
@@ -61,7 +58,7 @@ export default function ChatArea() {
             <p className="text-xs text-gray-500">Online</p>
           </div>
         </div>
-        {sidebarOpen && <MobileSideBar />}
+        {/* {sidebarOpen && <MobileSideBar />} */}
       </div>
 
       {/* Messages */}

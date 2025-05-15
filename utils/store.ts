@@ -6,7 +6,8 @@ export type Message = {
   sender_id: string;
   content: string;
   time: string;
-  chat_Id: string;
+  room_Id: string;
+  sender_image: string;
 };
 
 type ChatStore = {
@@ -18,7 +19,7 @@ type ChatStore = {
 export type Chat = {
   name: string;
   image: string;
-  room_Id: string;
+  room_id: string;
   id: string;
 } | null;
 
@@ -29,14 +30,20 @@ type ActivePageStore = {
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   chats: {},
-  addMessage: (userId: string, msg: Message) => {
-    const prev = get().chats[userId] || [];
-    set({ chats: { ...get().chats, [userId]: [...prev, msg] } });
+  addMessage: (roomId: string, msg: Message) => {
+    const prev = get().chats[roomId] || [];
+    set({ chats: { ...get().chats, [roomId]: [...prev, msg] } });
   },
-  getMessages: (userId: string) => get().chats[userId] || [],
+  getMessages: (roomId: string) => {
+    return get().chats[roomId] || [];
+  },
 }));
 
 export const setActiveChatPage = create<ActivePageStore>((set) => ({
-  activeChat: { name: "none", image: "none", room_Id: "none", id: "none" },
-  setActivePage: (item: Chat) => set(() => ({ activeChat: item })),
+  activeChat: { name: "none", image: "none", room_id: "none", id: "none" },
+  setActivePage: (item: Chat) => {
+    console.log("Setting item as : ", item);
+
+    return set(() => ({ activeChat: item }));
+  },
 }));

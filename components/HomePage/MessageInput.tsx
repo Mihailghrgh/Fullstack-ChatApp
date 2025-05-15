@@ -10,7 +10,7 @@ import { useUser } from "@clerk/nextjs";
 import { Message } from "@/utils/store";
 import axios from "axios";
 import { setActiveChatPage } from "@/utils/store";
-import { socket } from "./ChatArea";
+import { socket } from "../Socket/Socket";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
@@ -26,17 +26,19 @@ export default function MessageInput() {
       id: user?.id as string,
       sender: user?.fullName ?? (emailAddress?.toUpperCase() as string),
       sender_id: user?.id as string,
+      sender_image: user?.imageUrl as string,
       content: message,
       time: new Date().toLocaleTimeString([], {
         hour: "numeric",
         minute: "2-digit",
       }),
-      chat_Id: activeChat?.id as string,
+      room_Id: activeChat?.room_id as string,
     };
-    socket.emit("send_message", msg);
-    setMessage("");
 
     await axios.post("/api/sendMessage", { message: msg });
+    addMessage(activeChat?.room_id as string, msg);
+    socket.emit("send_message", { to: activeChat?.id, msg: msg });
+    setMessage("");
   };
 
   const userTyping = (e: string) => {
@@ -65,7 +67,7 @@ export default function MessageInput() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSubmit(e);
+              // handleSubmit(e);
             }
           }}
         />

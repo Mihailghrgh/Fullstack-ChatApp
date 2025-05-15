@@ -27,7 +27,7 @@ type Conversation = {
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
   const { signOut } = useClerk();
-  const { setActivePage } = setActiveChatPage();
+  const { setActivePage, activeChat } = setActiveChatPage();
   const { user } = useUser();
 
   const fetchAllUsers = async () => {
@@ -89,8 +89,8 @@ export default function Sidebar() {
                 ? {
                     name: item.userDetails.name,
                     image: item.userDetails.image,
-                    room_Id: conversation.room_id,
-                    id: conversation.id,
+                    room_id: conversation.room_id,
+                    id: item.id,
                   }
                 : null;
             return (
