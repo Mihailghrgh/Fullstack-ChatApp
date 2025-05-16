@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Chat, setActiveChatPage } from "@/utils/store";
 import AddNewContact from "./AddNewContact";
+import userList from "@/utils/userList";
 
 type Conversation = {
   createdAt: string;
@@ -27,7 +28,7 @@ type Conversation = {
 export default function Sidebar() {
   const { setTheme, theme } = useTheme();
   const { signOut } = useClerk();
-  const { setActivePage, activeChat } = setActiveChatPage();
+  const { setActivePage } = setActiveChatPage();
   const { user } = useUser();
 
   const fetchAllUsers = async () => {
@@ -111,6 +112,9 @@ export default function Sidebar() {
                           alt={item.userDetails.name}
                         />
                       </Avatar>
+                      {userList.has(item?.id) && (
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-950"></span>
+                      )}
                     </div>
                     <h1>{item.userDetails.name.split("@")[0]}</h1>
                     <div className="flex-1 overflow-hidden">

@@ -12,6 +12,7 @@ const port = 3000;
 const nextApp = next({ dev, hostname, port });
 const nextHandler = nextApp.getRequestHandler();
 
+
 nextApp.prepare().then(() => {
   const app = express();
 

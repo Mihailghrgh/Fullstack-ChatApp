@@ -71,18 +71,11 @@ function Messages() {
   }, []);
 
   useEffect(() => {
-    const data = getMessages(activeChat?.room_id as string);
-
-    console.log("Data here to understand", data);
-
+    getMessages(activeChat?.room_id as string);
     setTimeout(() => {
       newestMessage.current?.scrollIntoView({ behavior: "smooth" });
     }, 30);
-  }, [
-    activeChat?.room_id,
-    data?.length,
-    getMessages(activeChat?.room_id as string).length,
-  ]);
+  }, [activeChat?.room_id, getMessages(activeChat?.room_id as string).length]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 ">

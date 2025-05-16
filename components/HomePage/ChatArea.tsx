@@ -7,16 +7,14 @@ import MessageInput from "./MessageInput";
 import { setActiveChatPage } from "@/utils/store";
 import { Send } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
-// import { initializeSocket , socket} from "../Socket/Socket";
-import { Socket } from "socket.io-client";
-import { io } from "socket.io-client";
 import { socket } from "../Socket/Socket";
-// export let socket: Socket;
+import { useUsersStore } from "@/utils/store";
 
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const mobile = useMediaQuery("(max-width: 768px)");
   const { user } = useUser();
+  const { usersList, getUserList, deleteUser, setUserList } = useUsersStore();
 
   const { activeChat } = setActiveChatPage();
   useEffect(() => {
@@ -24,12 +22,21 @@ export default function ChatArea() {
       socket.auth = { userId: user?.id };
       socket.connect();
       socket.emit("client_ready", "hello from client");
+      setUserList(user?.id as string, socket.id as string);
+      console.log(usersList);
     }
+
+    socket.on("disconnect", () => {
+      deleteUser(user?.id as string);
+      console.log(usersList);
+    });
 
     return () => {
       console.log("Component unmounted but socket stays alive");
     };
   }, [user?.id]);
+
+  console.log(usersList);
 
   if (activeChat?.room_id === "none") {
     return (
