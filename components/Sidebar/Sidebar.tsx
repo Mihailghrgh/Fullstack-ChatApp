@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Chat, setActiveChatPage } from "@/utils/store";
 import AddNewContact from "./AddNewContact";
-import userList from "@/utils/userList";
+import UserStatus from "./UserStatus";
 
 type Conversation = {
   createdAt: string;
@@ -85,7 +85,7 @@ export default function Sidebar() {
       <div className="flex-1 overflow-y-auto">
         {data.map((conversation: Conversation) => {
           return conversation.participants.map((item) => {
-            const data: Chat =
+            const chat: Chat =
               user?.id !== item.id
                 ? {
                     name: item.userDetails.name,
@@ -102,7 +102,7 @@ export default function Sidebar() {
                     key={item.id}
                     className="flex items-center gap-3 border-b p-4 hover:bg-accent hover:cursor-pointer"
                     onClick={() => {
-                      setActivePage(data);
+                      setActivePage(chat);
                     }}
                   >
                     <div className="relative">
@@ -112,9 +112,7 @@ export default function Sidebar() {
                           alt={item.userDetails.name}
                         />
                       </Avatar>
-                      {userList.has(item?.id) && (
-                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white dark:ring-gray-950"></span>
-                      )}
+                      <UserStatus id={item.id} />
                     </div>
                     <h1>{item.userDetails.name.split("@")[0]}</h1>
                     <div className="flex-1 overflow-hidden">

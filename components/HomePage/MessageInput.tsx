@@ -11,12 +11,15 @@ import { Message } from "@/utils/store";
 import axios from "axios";
 import { setActiveChatPage } from "@/utils/store";
 import { socket } from "../Socket/Socket";
+import { useRef } from "react";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
   const { addMessage } = useChatStore();
   const { user } = useUser();
   const { activeChat } = setActiveChatPage();
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,13 +51,16 @@ export default function MessageInput() {
   return (
     <div className="border-t p-4 dark:border-gray-800">
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
-        <Input hidden type="file" />
         <Button
           type="button"
           size="icon"
           variant="ghost"
-          className="h-9 w-9 rounded-full"
+          className="h-9 w-9 rounded-full hover:cursor-pointer"
+          onClick={() => {
+            inputRef.current?.click();
+          }}
         >
+          <Input type="file" ref={inputRef} hidden className="w-1xl" />
           <Paperclip className="h-5 w-5" />
         </Button>
 

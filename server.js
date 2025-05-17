@@ -4,6 +4,7 @@ import next from "next";
 import { Server } from "socket.io";
 import cors from "cors";
 import userList from "./utils/userList.js";
+import axios from "axios";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -12,6 +13,14 @@ const port = 3000;
 const nextApp = next({ dev, hostname, port });
 const nextHandler = nextApp.getRequestHandler();
 
+const setUserOffline = async (id) => {
+  try {
+    await axios.post("http://localhost:3000/api/setUserOffline", { id });
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error occurred", error);
+  }
+};
 
 nextApp.prepare().then(() => {
   const app = express();
@@ -42,6 +51,13 @@ nextApp.prepare().then(() => {
     console.log("Connection Established......", socket.id);
     const userId = socket.handshake?.auth?.userId;
 
+    socket.broadcast.emit("update_user_list", userId);
+
+    socket.on("change_user_list", () => {
+      console.log("user connected sending event....");
+      socket.emit("update_user_list", userId);
+    });
+
     if (!userId) {
       console.log("No userId presented");
     }
@@ -53,7 +69,6 @@ nextApp.prepare().then(() => {
 
     if (userId) {
       userList.set(userId, socket.id);
-      console.log("Socket and user", userId, " + ", socket.id);
       console.log("Updated userlist, ", userList);
     }
 
@@ -72,10 +87,11 @@ nextApp.prepare().then(() => {
     });
 
     socket.on("disconnect", () => {
+      setUserOffline(userId);
       console.log("Client disconnected:", socket.id);
+      io.emit("update_user_list", userId);
       userList.delete(userId);
     });
-
   });
 
   httpServer

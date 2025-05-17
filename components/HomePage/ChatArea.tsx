@@ -8,35 +8,53 @@ import { setActiveChatPage } from "@/utils/store";
 import { Send } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { socket } from "../Socket/Socket";
-import { useUsersStore } from "@/utils/store";
+import axios from "axios";
 
 export default function ChatArea() {
+  const [usersOnline, setUsersOnline] = useState();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const mobile = useMediaQuery("(max-width: 768px)");
   const { user } = useUser();
-  const { usersList, getUserList, deleteUser, setUserList } = useUsersStore();
-
   const { activeChat } = setActiveChatPage();
+
+  const setUserOnline = async (id: string) => {
+    try {
+      await axios.post("/api/setUserOnline", { id });
+    } catch (error: any) {
+      console.log(error);
+      throw new Error("Error occurred", error);
+    }
+  };
+
+  const setUserOffline = async (id: string) => {
+    try {
+      await axios.post("/api/setUserOffline", { id });
+    } catch (error: any) {
+      console.log(error);
+      throw new Error("Error occurred", error);
+    }
+  };
+
   useEffect(() => {
     if (!socket.connected) {
       socket.auth = { userId: user?.id };
       socket.connect();
-      socket.emit("client_ready", "hello from client");
-      setUserList(user?.id as string, socket.id as string);
-      console.log(usersList);
+      setUserOnline(user?.id as string);
     }
 
+    // socket.emit("change_user_list", () => {
+    //   setUserOnline(user?.id as string);
+    // });
+
     socket.on("disconnect", () => {
-      deleteUser(user?.id as string);
-      console.log(usersList);
+      setUserOffline(user?.id as string);
     });
 
     return () => {
       console.log("Component unmounted but socket stays alive");
     };
   }, [user?.id]);
-
-  console.log(usersList);
 
   if (activeChat?.room_id === "none") {
     return (
