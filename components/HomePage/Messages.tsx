@@ -33,6 +33,8 @@ function Messages() {
           });
         const room_Id = item.room_Id;
         const sender_image = item.sender_image;
+        const files = item.files;
+        //setting up message Schema to pass to CHATS
         const msg: Message = {
           id,
           sender,
@@ -41,6 +43,7 @@ function Messages() {
           time,
           room_Id,
           sender_image,
+          files,
         };
 
         addMessage(activeChat?.room_id as string, msg);
@@ -60,7 +63,7 @@ function Messages() {
 
   useEffect(() => {
     socket.on("received_message", (msg) => {
-      console.log("received message", msg?.room_Id);
+      console.log("received message", msg?.room_Id , msg?.files);
       addMessage(msg?.room_Id as string, msg);
       newestMessage.current?.scrollIntoView({ behavior: "smooth" });
     });
@@ -76,6 +79,10 @@ function Messages() {
       newestMessage.current?.scrollIntoView({ behavior: "smooth" });
     }, 30);
   }, [activeChat?.room_id, getMessages(activeChat?.room_id as string).length]);
+
+  if (isLoading) {
+    return <h1>Loading.....</h1>;
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-4 ">
@@ -110,6 +117,12 @@ function Messages() {
                           : "bg-muted"
                       }`}
                     >
+                      {message?.files && (
+                        <img
+                          src={message.files}
+                          className="max-w-[300px] max-h-[300px]"
+                        />
+                      )}
                       <p>{message?.content}</p>
                     </div>
                     <p className="mt-1 text-xs text-gray-500">

@@ -10,6 +10,7 @@ export type Message = {
   time: string;
   room_Id: string;
   sender_image: string;
+  files: string | null;
 };
 
 type ChatStore = {

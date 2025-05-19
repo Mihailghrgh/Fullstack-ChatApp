@@ -22,6 +22,9 @@ export default function MessageInput() {
   const { user } = useUser();
   const { activeChat } = setActiveChatPage();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [fileToUpload, setFileToUpload] = useState<File>();
+
+  const form = document.getElementById("messageForm") as HTMLFormElement;
 
   async function convertDocument(file: File) {
     try {
@@ -39,8 +42,9 @@ export default function MessageInput() {
     }
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData();
     const emailAddress = user?.primaryEmailAddress?.emailAddress;
 
     const msg: Message = {
@@ -54,12 +58,30 @@ export default function MessageInput() {
         minute: "2-digit",
       }),
       room_Id: activeChat?.room_id as string,
+      files: fileType ? fileType : "",
     };
+    //formatting the message for backend
+    if (fileToUpload) {
+      formData.append("file", fileToUpload as File);
+    }
+    formData.append("message", JSON.stringify(msg));
+    //sending and returning the sent message as it might contain an image, doc, etc
+    const { data } = await axios.post("/api/sendMessage", formData);
+    console.log(data);
 
-    await axios.post("/api/sendMessage", { message: msg });
+    msg.files = data;
+    //emitting message to other chat
     addMessage(activeChat?.room_id as string, msg);
     socket.emit("send_message", { to: activeChat?.id, msg: msg });
     setMessage("");
+    setFileType("");
+    setFileName("");
+    setFileToUpload(undefined)
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+
+    form.reset();
   };
 
   const userTyping = (e: string) => {
@@ -68,6 +90,8 @@ export default function MessageInput() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setFileToUpload(file);
+    console.log(file);
 
     if (file) {
       if (file.name.endsWith(".docx") || file.name.endsWith(".doc")) {
@@ -96,7 +120,7 @@ export default function MessageInput() {
         <div className="flex flex-col text-center items-center justify-center w-full max-w-sm mx-auto mb-4 space-y-2 text-sm py-0 relative">
           <MessageFilePreview fileName={fileName} fileType={fileType} />
           <Button
-            type="button"
+            type="reset"
             variant="ghost"
             size="sm"
             onClick={handleRemoveFile}
@@ -107,9 +131,13 @@ export default function MessageInput() {
           </Button>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-end gap-2"
+        id="messageForm"
+      >
         <Button
-          type="reset"
+          type="button"
           size="icon"
           id="file"
           variant="ghost"
@@ -121,6 +149,7 @@ export default function MessageInput() {
           <Input
             type="file"
             ref={inputRef}
+            id="file"
             hidden
             onChange={handleFileUpload}
             className="w-1xl"
@@ -131,6 +160,7 @@ export default function MessageInput() {
         <Input
           value={message}
           id="message"
+          type="text"
           onChange={(e) => userTyping(e.target.value)}
           placeholder="Type a message..."
           className="min-h-[2.5rem] flex-1 resize-none"

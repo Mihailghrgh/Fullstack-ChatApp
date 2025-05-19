@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
     const data = await db
       .select()
       .from(messages)
-      .where(eq(messages.room_Id, id));
+      .where(eq(messages.room_Id, id as string));
 
     return NextResponse.json(data);
   } catch (error) {

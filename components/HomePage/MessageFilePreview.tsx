@@ -41,24 +41,20 @@ export function MessageFilePreview({
               alt="Image preview"
               className="max-w-[300px] max-h-[300px] rounded object-contain"
             />
-          ) : (
-            <div className="flex flex-col items-center">
-              <File />
-              <h1>{fileName}</h1>
-            </div>
-          )}
-
-          {documentTypesPdf.includes(fileUploaded) && (
+          ) : documentTypesPdf.includes(fileUploaded) ? (
             <iframe
               src={fileType}
               title="Document preview"
               className="w-[460px] h-[600px] border rounded"
             />
-          )}
-
-          {fileName.endsWith(".docx") && (
+          ) : fileName.endsWith(".docx") ? (
             <div className="max-h-[400px] w-[460px] overflow-auto border rounded p-4">
               <div dangerouslySetInnerHTML={{ __html: fileType }} />
+            </div>
+          ) : (
+            <div>
+              <File />
+              <h1>{fileName}</h1>
             </div>
           )}
         </div>

@@ -43,10 +43,6 @@ export default function ChatArea() {
       setUserOnline(user?.id as string);
     }
 
-    // socket.emit("change_user_list", () => {
-    //   setUserOnline(user?.id as string);
-    // });
-
     socket.on("disconnect", () => {
       setUserOffline(user?.id as string);
     });

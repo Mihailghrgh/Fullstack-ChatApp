@@ -1,32 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { createClient } from "@supabase/supabase-js";
 import { messages } from "@/schema/schema";
+import { db } from "@/lib/db";
 
-export async function POST(_req: NextRequest, _res: NextResponse) {
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY as string
+);
+
+export async function POST(_req: NextRequest) {
   try {
-    const item = await _req.json();
-    const { message } = item;
+    const formData = await _req.formData();
+    const file = formData.get("file") as File;
+    const messageRaw = formData.get("message") as string;
+    const message = JSON.parse(messageRaw);
 
-    await db.insert(messages).values({
-      sender_id: message.sender_id,
-      room_Id: message.room_Id,
-      email: message.sender,
-      message: message.content,
-      sender_image: message.sender_image,
-    });
+    console.log("What is inside here ", file);
 
-    return NextResponse.json("Response");
+    // const arrayBuffer = await file.arrayBuffer();
+    // const buffer = Buffer.from(arrayBuffer);
+
+    if (file) {
+      const filePath = `${Date.now()}-${file.name}`;
+      await supabase.storage.from("uploads").upload(filePath, file);
+
+      const { data: getFullUrlPath } = supabase.storage
+        .from("uploads")
+        .getPublicUrl(filePath);
+
+      await db.insert(messages).values({
+        sender_id: message.sender_id,
+        room_Id: message.room_Id,
+        email: message.sender,
+        message: message.content,
+        sender_image: message.sender_image,
+        files: getFullUrlPath.publicUrl,
+      });
+
+      return NextResponse.json(getFullUrlPath.publicUrl);
+    } else {
+      await db.insert(messages).values({
+        sender_id: message.sender_id,
+        room_Id: message.room_Id,
+        email: message.sender,
+        message: message.content,
+        sender_image: message.sender_image,
+        files: "",
+      });
+
+      return NextResponse.json("");
+    }
   } catch (error: any) {
     console.log(error);
     throw new Error("Error occurred: ", error);
   }
 }
-
-//  id: uuid("id").defaultRandom().notNull(),
-//   sender_id: text("sender_id").notNull(),
-//   email: text("email").notNull(),
-//   message: text("message").notNull(),
-//   createdAt: timestamp("createdAt").defaultNow().notNull(),
-//   conversation_id: uuid("conversation_id")
-//     .notNull()
-//     .references(() => conversation.id),
