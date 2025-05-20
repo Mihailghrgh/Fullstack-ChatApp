@@ -111,7 +111,9 @@ export default function MessageInput() {
   };
 
   const handleRemoveFile = () => {
+    setFileType("");
     setFileName("");
+    setFileToUpload(undefined);
   };
 
   return (

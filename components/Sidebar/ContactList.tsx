@@ -1,7 +1,7 @@
 "use client"
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import List from "./List";
+import List from "./AvailableUsersList";
 
 function ContactList() {
   const fetchData = async () => {

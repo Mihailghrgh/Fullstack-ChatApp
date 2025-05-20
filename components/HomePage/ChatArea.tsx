@@ -9,6 +9,7 @@ import { Send } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { socket } from "../Socket/Socket";
 import axios from "axios";
+import VideoOverlay from "../VideoCall/VideoOverlay";
 
 export default function ChatArea() {
   const [usersOnline, setUsersOnline] = useState();
@@ -67,6 +68,7 @@ export default function ChatArea() {
   }
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
+      <VideoOverlay />
       {/* Chat header */}
       <div className="flex justify-between border-b p-4 dark:border-gray-800">
         <div className="flex items-center">
