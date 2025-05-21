@@ -72,10 +72,20 @@ nextApp.prepare().then(() => {
       console.log("Updated userlist, ", userList);
     }
 
+    /////// Audio Call Socket logic
     socket.on("client_ready", () => {
       console.log("User has connected successfully !");
     });
 
+    socket.on("call_user", ({ callerId, callee, offer }) => {
+      socket.to(callerId).emit("incoming-call", { offer, from: callee });
+    });
+
+    socket.on("answer_call", ({ to, answer }) => {
+      socket.to(to).emit("call_answered", { answer });
+    });
+
+    ////// Message Socket Logic
     socket.on("send_message", ({ to, msg }) => {
       const targetSocketId = userList.get(to);
 

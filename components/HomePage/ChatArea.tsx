@@ -12,7 +12,6 @@ import axios from "axios";
 import VideoOverlay from "../VideoCall/VideoOverlay";
 
 export default function ChatArea() {
-  const [usersOnline, setUsersOnline] = useState();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const mobile = useMediaQuery("(max-width: 768px)");
