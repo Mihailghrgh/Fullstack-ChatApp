@@ -118,7 +118,33 @@ export default function ChatArea() {
           </div>
         </div>
         {/* USER CALLING LAYOUT */}
-        {incomingCall && (
+        {callAnswer === null ? (
+          incomingCall && (
+            <div className="space-x-4">
+              <Button
+                className="rounded-full bg-green-500 hover:bg-green-600 hover:cursor-pointer"
+                onClick={() => {
+                  acceptVoiceCall(
+                    incomingCall.offer,
+                    socket,
+                    incomingCall.callee,
+                    user?.id as string
+                  );
+                }}
+              >
+                <PhoneIncoming />
+                Accept
+              </Button>
+              <Button className="rounded-full bg-red-500 hover:bg-red-600 hover:cursor-pointer">
+                <PhoneMissed />
+                Decline
+              </Button>
+            </div>
+          )
+        ) : (
+          <></>
+        )}
+        {/* {incomingCall && (
           <div className="space-x-4">
             <Button
               className="rounded-full bg-green-500 hover:bg-green-600 hover:cursor-pointer"
@@ -139,7 +165,7 @@ export default function ChatArea() {
               Decline
             </Button>
           </div>
-        )}
+        )} */}
         {/* CALL USER BUTTON*/}
         <Button
           className="rounded-full hover:cursor-pointer"
