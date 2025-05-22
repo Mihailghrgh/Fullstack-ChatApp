@@ -90,10 +90,16 @@ nextApp.prepare().then(() => {
     socket.on("answer_call", ({ to, from, answer }) => {
       const targetSocketId = userList.get(to);
       const targetCallerId = userList.get(from);
-      console.log(to, from);
-      
+
       io.to(targetSocketId).emit("call_answered", answer);
       io.to(targetCallerId).emit("call_answered", answer);
+    });
+
+    socket.on("ice_candidate", ({candidate, to}) => {
+      const targetSocketId = userList.get(to);
+      console.log(targetSocketId);
+      
+      io.to(targetSocketId).emit("ice_candidate_offer", candidate);
     });
 
     ////// Message Socket Logic

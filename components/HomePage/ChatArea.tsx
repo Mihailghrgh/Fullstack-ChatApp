@@ -19,6 +19,10 @@ type RTCSessionCall = {
   callee: string;
 };
 
+const configuration = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
+
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [callAnswer, setCallAnswer] =
@@ -28,7 +32,8 @@ export default function ChatArea() {
   const mobile = useMediaQuery("(max-width: 768px)");
   const { user } = useUser();
   const { activeChat } = setActiveChatPage();
-  console.log(user?.id);
+
+  const peerConnection = new RTCPeerConnection(configuration);
 
   const setUserOnline = async (id: string) => {
     try {
@@ -89,6 +94,22 @@ export default function ChatArea() {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on("ice_candidate_offer", ({ candidate }) => {
+      console.log("ice candidate offer received", candidate);
+
+      if (candidate) {
+        peerConnection
+          .addIceCandidate(new RTCIceCandidateInit(candidate))
+          .catch((err) => console.log(err));
+      }
+    });
+
+    return () => {
+      socket.off("ice_candidate_offer");
+    };
+  });
+
   if (activeChat?.room_id === "none") {
     return (
       <div className="flex-1 flex items-center justify-center flex-col p-4 text-center">
@@ -102,6 +123,7 @@ export default function ChatArea() {
       </div>
     );
   }
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Chat header */}
@@ -125,6 +147,7 @@ export default function ChatArea() {
                 className="rounded-full bg-green-500 hover:bg-green-600 hover:cursor-pointer"
                 onClick={() => {
                   acceptVoiceCall(
+                    peerConnection,
                     incomingCall.offer,
                     socket,
                     incomingCall.callee,
@@ -144,33 +167,16 @@ export default function ChatArea() {
         ) : (
           <></>
         )}
-        {/* {incomingCall && (
-          <div className="space-x-4">
-            <Button
-              className="rounded-full bg-green-500 hover:bg-green-600 hover:cursor-pointer"
-              onClick={() => {
-                acceptVoiceCall(
-                  incomingCall.offer,
-                  socket,
-                  incomingCall.callee,
-                  user?.id as string
-                );
-              }}
-            >
-              <PhoneIncoming />
-              Accept
-            </Button>
-            <Button className="rounded-full bg-red-500 hover:bg-red-600 hover:cursor-pointer">
-              <PhoneMissed />
-              Decline
-            </Button>
-          </div>
-        )} */}
         {/* CALL USER BUTTON*/}
         <Button
           className="rounded-full hover:cursor-pointer"
           onClick={() =>
-            sendVoiceCall(activeChat?.id as string, user?.id as string, socket)
+            sendVoiceCall(
+              peerConnection,
+              activeChat?.id as string,
+              user?.id as string,
+              socket
+            )
           }
         >
           <PhoneCall />
@@ -180,7 +186,7 @@ export default function ChatArea() {
       </div>
       {/* Messages or Video Overlay */}
       {callAnswer ? (
-        <VideoOverlay />
+        <VideoOverlay peerConnection={peerConnection} />
       ) : (
         <>
           <Messages />

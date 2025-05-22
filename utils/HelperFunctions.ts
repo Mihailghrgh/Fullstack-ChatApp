@@ -6,17 +6,22 @@ type RTCSessionCall = {
 };
 
 export async function sendVoiceCall(
+  peerConnection: RTCPeerConnection,
   to: string,
   callee: string,
   socket: Socket
 ) {
   try {
-    //Establishing connection through a secured ice Server
-    const configuration = {
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    //creating the ICE-candidate first before sending the offer details
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", {
+          candidate: event.candidate.toJSON(),
+          to: to,
+        });
+      }
     };
-    const peerConnection = new RTCPeerConnection(configuration);
-
+    //Establishing connection through a secured ice Server
     //Getting media ready for the call
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream
@@ -38,6 +43,7 @@ export async function sendVoiceCall(
 }
 
 export async function acceptVoiceCall(
+  peerConnection: RTCPeerConnection,
   incomingCall: RTCSessionDescriptionInit,
   socket: Socket,
   to: string,
@@ -45,23 +51,54 @@ export async function acceptVoiceCall(
 ) {
   if (!incomingCall) return;
 
-  console.log(from);
-
   try {
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
+    //creating the ICE-candidate first before sending the offer details
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", {
+          candidate: event.candidate.toJSON(),
+          to: from,
+        });
+      }
+    };
 
+    //Establishing connection through a secured ice Server
+    //Getting media ready for the call
     await peerConnection.setRemoteDescription(
       new RTCSessionDescription(incomingCall)
     );
 
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream
+      .getTracks()
+      .forEach((track) => peerConnection.addTrack(track, stream));
+
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
+    //Emitting the answer request to the other user
     socket.emit("answer_call", { to, from, answer });
   } catch (error: any) {
     console.log(error);
     throw new Error("Error occurred", error);
   }
+}
+
+function setUpIceCandidate(
+  peerConnection: RTCPeerConnection,
+  socket: Socket,
+  to: string
+) {
+  try {
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", (event.candidate, to));
+      }
+    };
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+
+  return peerConnection;
 }
