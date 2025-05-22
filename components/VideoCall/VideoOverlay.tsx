@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { setActiveChatPage } from "@/utils/store";
 import { socket } from "../Socket/Socket";
 import { useUser } from "@clerk/nextjs";
+import { Button } from "../ui/button";
+import { Video } from "lucide-react";
+import { Mic } from "lucide-react";
+import { Phone } from "lucide-react";
+import { PhoneOff } from "lucide-react";
 
 type RTCSessionCall = {
   offer: RTCSessionDescriptionInit;
@@ -24,11 +29,51 @@ function VideoOverlay() {
     };
   }, []);
 
-  return <div>VideoOverlay</div>;
+  return (
+    <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4">
+      <div className="flex items-center gap-3 rounded-full bg-white px-6 py-3 shadow-lg dark:bg-gray-800">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="rounded-full hover:cursor-pointer"
+        >
+          <Mic className="h-5 w-5" />
+          <span className="sr-only">Toggle Mute</span>
+        </Button>
+
+        <Button
+          size="icon"
+          variant="ghost"
+          className="rounded-full hover:cursor-pointer"
+        >
+          <Video className="h-5 w-5" />
+          <span className="sr-only">Toggle Video</span>
+        </Button>
+
+        <Button
+          size="icon"
+          variant="destructive"
+          className="rounded-full hover:cursor-pointer"
+        >
+          <Phone className="h-5 w-5" />
+          <span className="sr-only">Call</span>
+        </Button>
+
+        <Button
+          size="icon"
+          variant="ghost"
+          className="rounded-full hover:cursor-pointer"
+        >
+          <PhoneOff className="h-5 w-5" />
+          <span className="sr-only">End Call</span>
+        </Button>
+      </div>
+    </div>
+  );
 }
 export default VideoOverlay;
 
-async function handleVoiceChat(callerId: string, callee: string) {
+async function sendVoiceCall(to: string, callee: string) {
   try {
     //Getting media ready for the call
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });

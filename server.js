@@ -77,12 +77,23 @@ nextApp.prepare().then(() => {
       console.log("User has connected successfully !");
     });
 
-    socket.on("call_user", ({ callerId, callee, offer }) => {
-      socket.to(callerId).emit("incoming-call", { offer, from: callee });
+    socket.on("call_user", ({ to, callee, offer }) => {
+      const targetSocketId = userList.get(to);
+
+      const targetCallerId = userList.get(callee);
+      if (!targetSocketId) {
+        socket.to(targetCallerId).emit("no_answer", "User is offline");
+      }
+      socket.to(targetSocketId).emit("incoming_call", { offer, callee });
     });
 
-    socket.on("answer_call", ({ to, answer }) => {
-      socket.to(to).emit("call_answered", { answer });
+    socket.on("answer_call", ({ to, from, answer }) => {
+      const targetSocketId = userList.get(to);
+      const targetCallerId = userList.get(from);
+      console.log(to, from);
+      
+      io.to(targetSocketId).emit("call_answered", answer);
+      io.to(targetCallerId).emit("call_answered", answer);
     });
 
     ////// Message Socket Logic
