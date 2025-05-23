@@ -13,6 +13,7 @@ import { Button } from "../ui/button";
 import VideoOverlay from "../VideoCall/VideoOverlay";
 import { sendVoiceCall } from "@/utils/HelperFunctions";
 import { acceptVoiceCall } from "@/utils/HelperFunctions";
+import List from "../Sidebar/AvailableUsersList";
 
 type RTCSessionCall = {
   offer: RTCSessionDescriptionInit;
@@ -72,7 +73,6 @@ export default function ChatArea() {
   // useEffect for incoming calls
   useEffect(() => {
     socket.on("incoming_call", (offer, callee) => {
-      console.log(offer, callee);
       const data = { offer, callee };
       setIncomingCall(data.offer);
     });
@@ -82,7 +82,7 @@ export default function ChatArea() {
     };
   }, []);
 
-  //useEffect checking incoming call
+  //useEffect checking answered call
   useEffect(() => {
     socket.on("call_answered", (answer) => {
       console.log(answer);
@@ -96,12 +96,13 @@ export default function ChatArea() {
 
   useEffect(() => {
     socket.on("ice_candidate_offer", ({ candidate }) => {
-      console.log("ice candidate offer received", candidate);
-
-      if (candidate) {
+      if (peerConnection.remoteDescription) {
+        console.log("True");
         peerConnection
-          .addIceCandidate(new RTCIceCandidateInit(candidate))
+          .addIceCandidate(new RTCIceCandidate(candidate))
           .catch((err) => console.log(err));
+      } else {
+        console.log("No description yet");
       }
     });
 

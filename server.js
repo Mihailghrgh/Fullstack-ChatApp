@@ -95,11 +95,17 @@ nextApp.prepare().then(() => {
       io.to(targetCallerId).emit("call_answered", answer);
     });
 
-    socket.on("ice_candidate", ({candidate, to}) => {
+    socket.on("ice_candidate", ({ candidate, to }) => {
+     
+
       const targetSocketId = userList.get(to);
-      console.log(targetSocketId);
+      const offer = {
+        candidate,
+      };
+
+      console.log(candidate);
       
-      io.to(targetSocketId).emit("ice_candidate_offer", candidate);
+      io.to(targetSocketId).emit("ice_candidate_offer", offer);
     });
 
     ////// Message Socket Logic

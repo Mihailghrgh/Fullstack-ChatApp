@@ -12,15 +12,6 @@ export async function sendVoiceCall(
   socket: Socket
 ) {
   try {
-    //creating the ICE-candidate first before sending the offer details
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice_candidate", {
-          candidate: event.candidate.toJSON(),
-          to: to,
-        });
-      }
-    };
     //Establishing connection through a secured ice Server
     //Getting media ready for the call
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -30,6 +21,15 @@ export async function sendVoiceCall(
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
 
+    //creating the ICE-candidate first before sending the offer details
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", {
+          candidate: event.candidate,
+          to: to,
+        });
+      }
+    };
     //Emitting the connection request to the other user
     socket.emit("call_user", {
       to: to,
@@ -52,16 +52,6 @@ export async function acceptVoiceCall(
   if (!incomingCall) return;
 
   try {
-    //creating the ICE-candidate first before sending the offer details
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice_candidate", {
-          candidate: event.candidate.toJSON(),
-          to: from,
-        });
-      }
-    };
-
     //Establishing connection through a secured ice Server
     //Getting media ready for the call
     await peerConnection.setRemoteDescription(
@@ -77,6 +67,16 @@ export async function acceptVoiceCall(
     await peerConnection.setLocalDescription(answer);
 
     //Emitting the answer request to the other user
+
+    //creating the ICE-candidate first before sending the offer details
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice_candidate", {
+          candidate: event.candidate,
+          to: from,
+        });
+      }
+    };
     socket.emit("answer_call", { to, from, answer });
   } catch (error: any) {
     console.log(error);
