@@ -1,36 +1,61 @@
+"use client";
 import { Socket } from "socket.io-client";
 
-type RTCSessionCall = {
-  offer: RTCSessionDescriptionInit;
-  callee: string;
+type RTCAnswer = {
+  sdp: string;
+  type: string;
 };
 
+export const configuration = {
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+};
+///////////////////////////////////////////////////////////////////////
 export async function sendVoiceCall(
-  peerConnection: RTCPeerConnection,
+  peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
   to: string,
   callee: string,
   socket: Socket
 ) {
   try {
-    //Establishing connection through a secured ice Server
     //Getting media ready for the call
+    // if (!peerConnectionRef.current) {
+    //   console.log("Peer Connection empty", peerConnectionRef);
+    //   return;
+    // }
+
+    const peerConnection = new RTCPeerConnection(configuration);
+
+    peerConnection.onicecandidate = (event) => {
+      console.log("creating ice candidate");
+
+      if (event.candidate) {
+        const iceCandidate = {
+          candidate: event.candidate,
+          to: to,
+        };
+        socket.emit("create_ice_candidate", iceCandidate);
+      }
+    };
+
+    //Recording audio track
+    peerConnection.ontrack = (event) => {
+      const remoteAudio = new Audio();
+      remoteAudio.srcObject = event.streams[0];
+      remoteAudio.autoplay = true;
+      remoteAudio.play().catch((e) => console.error("Playback error", e));
+    };
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream
       .getTracks()
       .forEach((track) => peerConnection.addTrack(track, stream));
+
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
 
-    //creating the ICE-candidate first before sending the offer details
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice_candidate", {
-          candidate: event.candidate,
-          to: to,
-        });
-      }
-    };
     //Emitting the connection request to the other user
+    peerConnectionRef.current = peerConnection;
+
     socket.emit("call_user", {
       to: to,
       callee: callee,
@@ -42,8 +67,9 @@ export async function sendVoiceCall(
   }
 }
 
+///////////////////////////////////////////////////////////////////////
 export async function acceptVoiceCall(
-  peerConnection: RTCPeerConnection,
+  peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
   incomingCall: RTCSessionDescriptionInit,
   socket: Socket,
   to: string,
@@ -52,53 +78,141 @@ export async function acceptVoiceCall(
   if (!incomingCall) return;
 
   try {
-    //Establishing connection through a secured ice Server
     //Getting media ready for the call
-    await peerConnection.setRemoteDescription(
-      new RTCSessionDescription(incomingCall)
-    );
+    const peerConnection = new RTCPeerConnection(configuration);
+
+    peerConnection.onicecandidate = (event) => {
+      console.log("creating ice candidate");
+
+      if (event.candidate) {
+        const iceCandidate = {
+          candidate: event.candidate,
+          to: to,
+        };
+        socket.emit("create_ice_candidate", iceCandidate);
+      }
+    };
+    
+    //Recording audio track
+    peerConnection.ontrack = (event) => {
+      const remoteAudio = new Audio();
+      remoteAudio.srcObject = event.streams[0];
+      remoteAudio.autoplay = true;
+      remoteAudio.play().catch((e) => console.error("Playback error", e));
+    };
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream
       .getTracks()
       .forEach((track) => peerConnection.addTrack(track, stream));
 
+    await peerConnection.setRemoteDescription(
+      new RTCSessionDescription(incomingCall)
+    );
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
-    //Emitting the answer request to the other user
+    peerConnectionRef.current = peerConnection;
 
-    //creating the ICE-candidate first before sending the offer details
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice_candidate", {
-          candidate: event.candidate,
-          to: from,
-        });
-      }
-    };
-    socket.emit("answer_call", { to, from, answer });
+    socket.emit("check_answer", answer, to);
   } catch (error: any) {
     console.log(error);
     throw new Error("Error occurred", error);
   }
 }
 
-function setUpIceCandidate(
-  peerConnection: RTCPeerConnection,
-  socket: Socket,
-  to: string
+// export async function handleVoiceCallAnswer(
+//   peerConnection: RTCPeerConnection,
+//   answer: RTCSessionDescriptionInit,
+//   pendingCandidates: RTCIceCandidateInit[]
+// ) {
+//   try {
+//     // Only set remote answer if the signaling state is correct
+//     if (peerConnection.signalingState === "stable") {
+//       await peerConnection.setRemoteDescription(
+//         new RTCSessionDescription(answer)
+//       );
+
+//       // Apply buffered ICE candidates
+//       pendingCandidates.forEach((candidate) => {
+//         peerConnection
+//           .addIceCandidate(new RTCIceCandidate(candidate))
+//           .catch((err) => console.log(err));
+//       });
+//       pendingCandidates.length = 0; // Clear buffer
+//     } else {
+//       console.warn(
+//         "Skipping setRemoteDescription: wrong signaling state",
+//         peerConnection.signalingState
+//       );
+//     }
+//   } catch (error) {
+//     console.log("handleVoiceCallAnswer error:", error);
+//     throw new Error("Failed to set remote answer");
+//   }
+// }
+///////////////////////////////////////////////////////////////////////
+export async function setRemoteDescription(
+  peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
+  answer: RTCSessionDescriptionInit
 ) {
+  if (peerConnectionRef?.current?.signalingState !== "have-local-offer") {
+    console.warn(
+      "Skipping setRemoteDescription because signalingState is",
+      peerConnectionRef?.current?.signalingState
+    );
+    return;
+  }
   try {
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("ice_candidate", (event.candidate, to));
-      }
-    };
-  } catch (error: any) {
-    console.log(error);
-    throw new Error(error);
+    await peerConnectionRef?.current?.setRemoteDescription(
+      new RTCSessionDescription(answer)
+    );
+    console.log("Remote description set with answer successfully.");
+  } catch (err) {
+    console.error("Failed to set remote description:", err);
+  }
+}
+
+export async function setIceCandidate(
+  peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
+  socket: Socket,
+  id: string
+) {
+  console.log(peerConnectionRef);
+
+  if (!peerConnectionRef.current) {
+    console.log("Peer Connection empty", peerConnectionRef);
+    return;
   }
 
-  return peerConnection;
+  peerConnectionRef.current.onicecandidate = (event) => {
+    console.log("creating ice candidate");
+
+    if (event.candidate) {
+      const iceCandidate = {
+        candidate: event.candidate,
+        to: id,
+      };
+      socket.emit("create_ice_candidate", iceCandidate);
+    }
+  };
 }
+
+// function setUpIceCandidate(
+//   peerConnection: RTCPeerConnection,
+//   socket: Socket,
+//   to: string
+// ) {
+//   try {
+//     peerConnection.onicecandidate = (event) => {
+//       if (event.candidate) {
+//         socket.emit("ice_candidate", (event.candidate, to));
+//       }
+//     };
+//   } catch (error: any) {
+//     console.log(error);
+//     throw new Error(error);
+//   }
+
+//   return peerConnection;
+// }

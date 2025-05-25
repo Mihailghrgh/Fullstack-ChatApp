@@ -91,22 +91,32 @@ nextApp.prepare().then(() => {
       const targetSocketId = userList.get(to);
       const targetCallerId = userList.get(from);
 
-      io.to(targetSocketId).emit("call_answered", answer);
-      io.to(targetCallerId).emit("call_answered", answer);
+      // io.to(targetSocketId).emit("call_answered", answer);
+      // io.to(targetCallerId).emit("call_answered", answer);
     });
 
-    socket.on("ice_candidate", ({ candidate, to }) => {
-     
-
+    socket.on("check_answer", (answer, to) => {
       const targetSocketId = userList.get(to);
-      const offer = {
-        candidate,
-      };
-
-      console.log(candidate);
-      
-      io.to(targetSocketId).emit("ice_candidate_offer", offer);
+      io.to(targetSocketId).emit("checking_answer", answer);
     });
+
+    socket.on("create_ice_candidate", (candidate) => {
+
+      const targetSocketId = userList.get(candidate.to)
+      io.to(targetSocketId).emit("ice_candidate", candidate);
+    });
+
+    // socket.on("ice_candidate", ({ candidate, to }) => {
+
+    //   const targetSocketId = userList.get(to);
+    //   const offer = {
+    //     candidate,
+    //   };
+
+    //   console.log(candidate);
+
+    //   io.to(targetSocketId).emit("ice_candidate_offer", offer);
+    // });
 
     ////// Message Socket Logic
     socket.on("send_message", ({ to, msg }) => {

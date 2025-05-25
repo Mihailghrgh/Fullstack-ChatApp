@@ -1,7 +1,7 @@
 "use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useMediaQuery } from "usehooks-ts";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
 import { setActiveChatPage } from "@/utils/store";
@@ -11,30 +11,29 @@ import { socket } from "../Socket/Socket";
 import axios from "axios";
 import { Button } from "../ui/button";
 import VideoOverlay from "../VideoCall/VideoOverlay";
-import { sendVoiceCall } from "@/utils/HelperFunctions";
+import { sendVoiceCall, setIceCandidate } from "@/utils/HelperFunctions";
 import { acceptVoiceCall } from "@/utils/HelperFunctions";
-import List from "../Sidebar/AvailableUsersList";
+import { handleVoiceCallAnswer } from "@/utils/HelperFunctions";
+import { setRemoteDescription } from "@/utils/HelperFunctions";
 
 type RTCSessionCall = {
   offer: RTCSessionDescriptionInit;
   callee: string;
 };
 
-const configuration = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
-
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  ////////Rtc Peer Connection
   const [callAnswer, setCallAnswer] =
     useState<RTCSessionDescriptionInit | null>(null);
   const [incomingCall, setIncomingCall] = useState<RTCSessionCall | null>(null);
-
+  const [peerConnection, setPeerConnection] =
+    useState<RTCPeerConnection | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  ////////Rtc Peer Connection
   const mobile = useMediaQuery("(max-width: 768px)");
   const { user } = useUser();
   const { activeChat } = setActiveChatPage();
-
-  const peerConnection = new RTCPeerConnection(configuration);
 
   const setUserOnline = async (id: string) => {
     try {
@@ -95,21 +94,64 @@ export default function ChatArea() {
   }, []);
 
   useEffect(() => {
+    socket.on("checking_answer", async (answer) => {
+      await setRemoteDescription(peerConnectionRef, answer);
+      // await setIceCandidate(peerConnectionRef , socket, activeChat?.id as string);
+
+      // if (!peerConnectionRef.current) {
+      //   console.warn("peerConnection is empty", peerConnectionRef);
+      //   return;
+      // }
+
+      // console.log("passed");
+
+      // peerConnectionRef.current.onicecandidate = (event) => {
+      //   console.log("creating ice candidate");
+
+      //   if (event.candidate) {
+      //     const iceCandidate = {
+      //       candidate: event.candidate,
+      //       to: activeChat?.id as string,
+      //     };
+      //     socket.emit("create_ice_candidate", iceCandidate);
+      //   }
+      // };
+    });
+
+    return () => {
+      socket.off("checking_answer");
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("ice_candidate", (candidate) => {
+      console.log("executed");
+
+      peerConnectionRef.current
+        ?.addIceCandidate(new RTCIceCandidate(candidate.candidate))
+        .catch((err) => console.log(err));
+    });
+  });
+
+  useEffect(() => {
     socket.on("ice_candidate_offer", ({ candidate }) => {
-      if (peerConnection.remoteDescription) {
-        console.log("True");
-        peerConnection
-          .addIceCandidate(new RTCIceCandidate(candidate))
+      if (peerConnectionRef?.current?.remoteDescription) {
+        peerConnectionRef?.current
+          ?.addIceCandidate(new RTCIceCandidate(candidate))
           .catch((err) => console.log(err));
       } else {
-        console.log("No description yet");
+        console.warn(
+          "Error occurred, remote Description might not be available"
+        );
       }
     });
 
     return () => {
       socket.off("ice_candidate_offer");
     };
-  });
+  }, []);
+
+  useEffect(() => {}, []);
 
   if (activeChat?.room_id === "none") {
     return (
@@ -148,7 +190,7 @@ export default function ChatArea() {
                 className="rounded-full bg-green-500 hover:bg-green-600 hover:cursor-pointer"
                 onClick={() => {
                   acceptVoiceCall(
-                    peerConnection,
+                    peerConnectionRef,
                     incomingCall.offer,
                     socket,
                     incomingCall.callee,
@@ -171,29 +213,36 @@ export default function ChatArea() {
         {/* CALL USER BUTTON*/}
         <Button
           className="rounded-full hover:cursor-pointer"
-          onClick={() =>
+          onClick={() => {
             sendVoiceCall(
-              peerConnection,
+              peerConnectionRef,
               activeChat?.id as string,
               user?.id as string,
               socket
-            )
-          }
+            );
+          }}
         >
           <PhoneCall />
         </Button>
-
+        <Button
+          className="rounded-full hover:cursor-pointer"
+          onClick={() => {
+            console.log("Checking peer connection: ", peerConnectionRef);
+          }}
+        >
+          <PhoneCall className="text-red-500" />
+        </Button>
         {/* {sidebarOpen && <MobileSideBar />} */}
       </div>
       {/* Messages or Video Overlay */}
-      {callAnswer ? (
+      {/* {callAnswer ? (
         <VideoOverlay peerConnection={peerConnection} />
       ) : (
         <>
           <Messages />
           <MessageInput />
         </>
-      )}
+      )} */}
     </div>
   );
 }

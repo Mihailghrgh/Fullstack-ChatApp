@@ -19,7 +19,11 @@ const config = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-function VideoOverlay({ peerConnection }: { peerConnection : RTCPeerConnection}) {
+function VideoOverlay({
+  peerConnection,
+}: {
+  peerConnection: RTCPeerConnection | null;
+}) {
   const user = useUser();
   //elements for Audio
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -63,7 +67,7 @@ function VideoOverlay({ peerConnection }: { peerConnection : RTCPeerConnection})
   return (
     <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4">
       <div className="flex items-center gap-3 rounded-full bg-white px-6 py-3 shadow-lg dark:bg-gray-800">
-        <audio autoPlay ref={remoteAudioRef} />
+        <audio autoPlay ref={remoteAudioRef} controls />
         <Button
           size="icon"
           variant="ghost"
