@@ -1,17 +1,13 @@
 "use client";
 import { Socket } from "socket.io-client";
 
-type RTCAnswer = {
-  sdp: string;
-  type: string;
-};
-
 export const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 ///////////////////////////////////////////////////////////////////////
 export async function sendVoiceCall(
   peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
+  remoteAudioRef: React.MutableRefObject<HTMLAudioElement | null>,
   to: string,
   callee: string,
   socket: Socket
@@ -26,8 +22,6 @@ export async function sendVoiceCall(
     const peerConnection = new RTCPeerConnection(configuration);
 
     peerConnection.onicecandidate = (event) => {
-      console.log("creating ice candidate");
-
       if (event.candidate) {
         const iceCandidate = {
           candidate: event.candidate,
@@ -43,6 +37,8 @@ export async function sendVoiceCall(
       remoteAudio.srcObject = event.streams[0];
       remoteAudio.autoplay = true;
       remoteAudio.play().catch((e) => console.error("Playback error", e));
+
+      remoteAudioRef.current = remoteAudio;
     };
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -70,6 +66,7 @@ export async function sendVoiceCall(
 ///////////////////////////////////////////////////////////////////////
 export async function acceptVoiceCall(
   peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>,
+  remoteAudioRef: React.MutableRefObject<HTMLAudioElement | null>,
   incomingCall: RTCSessionDescriptionInit,
   socket: Socket,
   to: string,
@@ -82,8 +79,6 @@ export async function acceptVoiceCall(
     const peerConnection = new RTCPeerConnection(configuration);
 
     peerConnection.onicecandidate = (event) => {
-      console.log("creating ice candidate");
-
       if (event.candidate) {
         const iceCandidate = {
           candidate: event.candidate,
@@ -92,13 +87,15 @@ export async function acceptVoiceCall(
         socket.emit("create_ice_candidate", iceCandidate);
       }
     };
-    
-    //Recording audio track
+
+    // Recording audio track
     peerConnection.ontrack = (event) => {
       const remoteAudio = new Audio();
       remoteAudio.srcObject = event.streams[0];
       remoteAudio.autoplay = true;
       remoteAudio.play().catch((e) => console.error("Playback error", e));
+
+      remoteAudioRef.current = remoteAudio;
     };
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -115,6 +112,8 @@ export async function acceptVoiceCall(
     peerConnectionRef.current = peerConnection;
 
     socket.emit("check_answer", answer, to);
+
+    socket.emit("set_overlay", to, from);
   } catch (error: any) {
     console.log(error);
     throw new Error("Error occurred", error);

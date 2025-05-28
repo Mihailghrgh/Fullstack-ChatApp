@@ -8,13 +8,12 @@ import { setActiveChatPage } from "@/utils/store";
 import { PhoneCall, Send, PhoneMissed, PhoneIncoming } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { socket } from "../Socket/Socket";
-import axios from "axios";
 import { Button } from "../ui/button";
 import VideoOverlay from "../VideoCall/VideoOverlay";
-import { sendVoiceCall, setIceCandidate } from "@/utils/HelperFunctions";
+import { sendVoiceCall } from "@/utils/HelperFunctions";
 import { acceptVoiceCall } from "@/utils/HelperFunctions";
-import { handleVoiceCallAnswer } from "@/utils/HelperFunctions";
 import { setRemoteDescription } from "@/utils/HelperFunctions";
+import { setActiveAudioCall } from "@/utils/store";
 
 type RTCSessionCall = {
   offer: RTCSessionDescriptionInit;
@@ -23,51 +22,18 @@ type RTCSessionCall = {
 
 export default function ChatArea() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [audiOverlay, setAudioOverlay] = useState<boolean>(false);
   ////////Rtc Peer Connection
   const [callAnswer, setCallAnswer] =
     useState<RTCSessionDescriptionInit | null>(null);
   const [incomingCall, setIncomingCall] = useState<RTCSessionCall | null>(null);
-  const [peerConnection, setPeerConnection] =
-    useState<RTCPeerConnection | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const { activeAudioChat, setActiveAudioChat } = setActiveAudioCall();
   ////////Rtc Peer Connection
   const mobile = useMediaQuery("(max-width: 768px)");
   const { user } = useUser();
   const { activeChat } = setActiveChatPage();
-
-  const setUserOnline = async (id: string) => {
-    try {
-      await axios.post("/api/setUserOnline", { id });
-    } catch (error: any) {
-      console.log(error);
-      throw new Error("Error occurred", error);
-    }
-  };
-
-  const setUserOffline = async (id: string) => {
-    try {
-      await axios.post("/api/setUserOffline", { id });
-    } catch (error: any) {
-      console.log(error);
-      throw new Error("Error occurred", error);
-    }
-  };
-
-  useEffect(() => {
-    if (!socket.connected) {
-      socket.auth = { userId: user?.id };
-      socket.connect();
-      setUserOnline(user?.id as string);
-    }
-
-    socket.on("disconnect", () => {
-      setUserOffline(user?.id as string);
-    });
-
-    return () => {
-      console.log("Component unmounted but socket stays alive");
-    };
-  }, [user?.id]);
 
   // useEffect for incoming calls
   useEffect(() => {
@@ -84,7 +50,6 @@ export default function ChatArea() {
   //useEffect checking answered call
   useEffect(() => {
     socket.on("call_answered", (answer) => {
-      console.log(answer);
       setCallAnswer(answer);
     });
 
@@ -93,29 +58,10 @@ export default function ChatArea() {
     };
   }, []);
 
+  //useEffect to activate the call
   useEffect(() => {
     socket.on("checking_answer", async (answer) => {
       await setRemoteDescription(peerConnectionRef, answer);
-      // await setIceCandidate(peerConnectionRef , socket, activeChat?.id as string);
-
-      // if (!peerConnectionRef.current) {
-      //   console.warn("peerConnection is empty", peerConnectionRef);
-      //   return;
-      // }
-
-      // console.log("passed");
-
-      // peerConnectionRef.current.onicecandidate = (event) => {
-      //   console.log("creating ice candidate");
-
-      //   if (event.candidate) {
-      //     const iceCandidate = {
-      //       candidate: event.candidate,
-      //       to: activeChat?.id as string,
-      //     };
-      //     socket.emit("create_ice_candidate", iceCandidate);
-      //   }
-      // };
     });
 
     return () => {
@@ -123,35 +69,30 @@ export default function ChatArea() {
     };
   }, []);
 
+  //useEffect to create ICE-candidate
   useEffect(() => {
     socket.on("ice_candidate", (candidate) => {
-      console.log("executed");
-
       peerConnectionRef.current
         ?.addIceCandidate(new RTCIceCandidate(candidate.candidate))
         .catch((err) => console.log(err));
     });
-  });
-
-  useEffect(() => {
-    socket.on("ice_candidate_offer", ({ candidate }) => {
-      if (peerConnectionRef?.current?.remoteDescription) {
-        peerConnectionRef?.current
-          ?.addIceCandidate(new RTCIceCandidate(candidate))
-          .catch((err) => console.log(err));
-      } else {
-        console.warn(
-          "Error occurred, remote Description might not be available"
-        );
-      }
-    });
 
     return () => {
-      socket.off("ice_candidate_offer");
+      socket.off("ice_candidate");
     };
   }, []);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    socket.on("activate_overlay", (data) => {
+      setAudioOverlay(data);
+      setActiveAudioChat(activeChat?.id as string);
+      setIncomingCall(null);
+    });
+
+    return () => {
+      socket.off("activate_overlay");
+    };
+  }, [activeChat?.id, setActiveAudioChat]);
 
   if (activeChat?.room_id === "none") {
     return (
@@ -191,6 +132,7 @@ export default function ChatArea() {
                 onClick={() => {
                   acceptVoiceCall(
                     peerConnectionRef,
+                    remoteAudioRef,
                     incomingCall.offer,
                     socket,
                     incomingCall.callee,
@@ -216,6 +158,7 @@ export default function ChatArea() {
           onClick={() => {
             sendVoiceCall(
               peerConnectionRef,
+              remoteAudioRef,
               activeChat?.id as string,
               user?.id as string,
               socket
@@ -224,25 +167,21 @@ export default function ChatArea() {
         >
           <PhoneCall />
         </Button>
-        <Button
-          className="rounded-full hover:cursor-pointer"
-          onClick={() => {
-            console.log("Checking peer connection: ", peerConnectionRef);
-          }}
-        >
-          <PhoneCall className="text-red-500" />
-        </Button>
+
         {/* {sidebarOpen && <MobileSideBar />} */}
       </div>
       {/* Messages or Video Overlay */}
-      {/* {callAnswer ? (
-        <VideoOverlay peerConnection={peerConnection} />
+      {activeChat?.id === activeAudioChat ? (
+        <VideoOverlay
+          remoteAudioRef={remoteAudioRef}
+          peerConnectionRef={peerConnectionRef}
+        />
       ) : (
         <>
           <Messages />
           <MessageInput />
         </>
-      )} */}
+      )}
     </div>
   );
 }

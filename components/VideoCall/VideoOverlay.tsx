@@ -1,79 +1,84 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { setActiveChatPage } from "@/utils/store";
 import { socket } from "../Socket/Socket";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "../ui/button";
-import { Video } from "lucide-react";
-import { Mic } from "lucide-react";
+import { Ghost, Video } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 import { Phone } from "lucide-react";
 import { PhoneOff } from "lucide-react";
+import { setActiveAudioCall } from "@/utils/store";
+import { setActiveChatPage } from "@/utils/store";
 
-type RTCSessionCall = {
-  offer: RTCSessionDescriptionInit;
-  callee: string;
+type AudioProps = {
+  remoteAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
+  peerConnectionRef: React.MutableRefObject<RTCPeerConnection | null>;
 };
 
-const config = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-};
-
-function VideoOverlay({
-  peerConnection,
-}: {
-  peerConnection: RTCPeerConnection | null;
-}) {
+function VideoOverlay({ peerConnectionRef, remoteAudioRef }: AudioProps) {
   const user = useUser();
   //elements for Audio
-  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  peerConnectionRef.current = peerConnection;
-  //
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [mic, setMic] = useState<boolean>(true);
+  const { activeAudioChat, setActiveAudioChat } = setActiveAudioCall();
   const { activeChat } = setActiveChatPage();
-  const [incomingCall, setIncomingCall] = useState<RTCSessionCall | null>(null);
-
-  //Attaching Audio listener
-  function attachAudio(rtcPeerConnection: RTCPeerConnection) {
-    const remoteAudioStream = new MediaStream();
-
-    rtcPeerConnection.ontrack = (event) => {
-      remoteAudioStream.addTrack(event.track);
-
-      if (remoteAudioRef.current) {
-        console.log("Triggered");
-
-        remoteAudioRef.current.srcObject = remoteAudioStream;
-        remoteAudioRef.current
-          .play()
-          .catch((error) => console.log("Error", error));
+  function toggleMic() {
+    try {
+      const audioEl = remoteAudioRef.current;
+      if (!audioEl) {
+        console.warn("Audio element ref is null.");
+        return;
       }
-    };
+
+      const stream = remoteAudioRef.current?.srcObject as MediaStream;
+      stream
+        .getAudioTracks()
+        .forEach((audio) => (audio.enabled = !audio.enabled));
+
+      setMic((prev) => !prev);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error as string);
+    }
   }
 
-  attachAudio(peerConnection);
-  //
-
   useEffect(() => {
-    socket.on("incoming_call", (offer, callee) => {
-      setIncomingCall({ offer, callee });
+    socket.on("end_call", () => {
+      peerConnectionRef.current?.close();
+      remoteAudioRef.current = null;
+      setActiveAudioChat("none");
     });
 
     return () => {
-      socket.off("incoming_call");
+      socket.off("end_call");
     };
   }, []);
+
+  function endCall() {
+    try {
+      socket.emit("end_call_request", activeChat?.id);
+      peerConnectionRef.current?.close();
+      remoteAudioRef.current = null;
+      setActiveAudioChat("none");
+    } catch (error) {
+      console.log(error);
+      throw new Error(error as string);
+    }
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 flex justify-center p-4">
       <div className="flex items-center gap-3 rounded-full bg-white px-6 py-3 shadow-lg dark:bg-gray-800">
-        <audio autoPlay ref={remoteAudioRef} controls />
+        <audio autoPlay ref={audioRef} />
         <Button
           size="icon"
-          variant="ghost"
+          variant={mic ? "ghost" : "destructive"}
           className="rounded-full hover:cursor-pointer"
+          onClick={toggleMic}
         >
-          <Mic className="h-5 w-5" />
+          {mic ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5  " />}
+
           <span className="sr-only">Toggle Mute</span>
         </Button>
 
@@ -90,15 +95,7 @@ function VideoOverlay({
           size="icon"
           variant="destructive"
           className="rounded-full hover:cursor-pointer"
-        >
-          <Phone className="h-5 w-5" />
-          <span className="sr-only">Call</span>
-        </Button>
-
-        <Button
-          size="icon"
-          variant="ghost"
-          className="rounded-full hover:cursor-pointer"
+          onClick={endCall}
         >
           <PhoneOff className="h-5 w-5" />
           <span className="sr-only">End Call</span>

@@ -70,6 +70,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 }));
 
+type AudioCall = {
+  activeAudioChat: string;
+  setActiveAudioChat: (roomId: string) => void;
+};
+
+export const setActiveAudioCall = create<AudioCall>((set) => ({
+  activeAudioChat: "none",
+  setActiveAudioChat: (roomId) => {
+    return set({ activeAudioChat: roomId });
+  },
+}));
+
 export const setActiveChatPage = create<ActivePageStore>((set) => ({
   activeChat: { name: "none", image: "none", room_id: "none", id: "none" },
   setActivePage: (item: Chat) => {

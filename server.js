@@ -101,22 +101,23 @@ nextApp.prepare().then(() => {
     });
 
     socket.on("create_ice_candidate", (candidate) => {
-
-      const targetSocketId = userList.get(candidate.to)
+      const targetSocketId = userList.get(candidate.to);
       io.to(targetSocketId).emit("ice_candidate", candidate);
     });
 
-    // socket.on("ice_candidate", ({ candidate, to }) => {
+    socket.on("set_overlay", (to, from) => {
+      const targetSocketId = userList.get(to);
+      const targetCallerId = userList.get(from);
 
-    //   const targetSocketId = userList.get(to);
-    //   const offer = {
-    //     candidate,
-    //   };
+      const setOverlay = true;
+      io.to(targetSocketId).emit("activate_overlay", setOverlay);
+      io.to(targetCallerId).emit("activate_overlay", setOverlay);
+    });
 
-    //   console.log(candidate);
-
-    //   io.to(targetSocketId).emit("ice_candidate_offer", offer);
-    // });
+    socket.on("end_call_request", (id) => {
+      const targetSocketId = userList.get(id);
+      io.to(targetSocketId).emit("end_call");
+    });
 
     ////// Message Socket Logic
     socket.on("send_message", ({ to, msg }) => {
@@ -127,6 +128,12 @@ nextApp.prepare().then(() => {
       } else {
         console.log("Unsuccessful");
       }
+    });
+
+    socket.on("user_logout", (id) => {
+      setUserOffline(id);
+      userList.delete(userId);
+      io.emit("update_user_list", id);
     });
 
     socket.on("disconnect", () => {

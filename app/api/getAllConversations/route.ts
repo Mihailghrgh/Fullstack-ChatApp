@@ -11,8 +11,16 @@ type Participant = {
 
 export async function GET(_req: NextRequest) {
   try {
-    const { userId: id } = await auth();
+    const { searchParams } = new URL(_req.url);
+    const data = searchParams.get("data");
 
+    console.log("Executed response........", data);
+
+    if (!data) {
+      console.log("Empty data................ ", data);
+    }
+
+    const { userId: id } = await auth();
     const conversations = await GetConversations(id as string);
 
     //Getting the userIds
@@ -68,7 +76,7 @@ export async function GET(_req: NextRequest) {
         };
       })
     );
-    
+
     return NextResponse.json(finalConversation);
   } catch (error: any) {
     console.log(error);
@@ -86,7 +94,8 @@ export const GetConversations = async (userId: string) => {
 
     return data;
   } catch (error) {
-    console.log(error);
+    console.log("An error occurred.......", error);
+
+    throw new Error(error);
   }
 };
-

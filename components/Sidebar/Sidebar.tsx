@@ -9,6 +9,10 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import { Chat, setActiveChatPage } from "@/utils/store";
 import AddNewContact from "./AddNewContact";
 import UserStatus from "./UserStatus";
+import { useQueryClient } from "@tanstack/react-query";
+import { socket } from "../Socket/Socket";
+import { useEffect } from "react";
+import { setActiveAudioCall } from "@/utils/store";
 
 type Conversation = {
   createdAt: string;
@@ -30,22 +34,62 @@ export default function Sidebar() {
   const { signOut } = useClerk();
   const { setActivePage } = setActiveChatPage();
   const { user } = useUser();
+  const queryClient = useQueryClient();
+  const { activeAudioChat } = setActiveAudioCall();
+
+  const setUserOnline = async (id: string) => {
+    try {
+      await axios.post("/api/setUserOnline", { id });
+    } catch (error: any) {
+      console.log(error);
+      throw new Error("Error occurred", error);
+    }
+  };
+
+  useEffect(() => {
+    socket.auth = { userId: user?.id };
+    socket.connect();
+
+    socket.on("connect", () => {
+      setUserOnline(user?.id as string);
+    });
+  }, [user?.id]);
 
   const fetchAllUsers = async () => {
+    if (!user?.id) {
+      console.log("This is empty ? : ", user?.id);
+
+      return;
+    }
     try {
-      const { data } = await axios.get("/api/getAllConversations");
+      const { data } = await axios.get("/api/getAllConversations", {
+        params: { data: user?.id },
+      });
+      console.log("Triggered all conversation", data);
+
       return data;
     } catch (error) {
       console.log(error);
+      throw new Error(error as string);
     }
   };
+
+  const handleSignOut = async () => {
+    socket.emit("user_logout", user?.id);
+    socket.disconnect();
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    signOut({ redirectUrl: "/sign-in" });
+  };
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", user?.id],
     queryFn: fetchAllUsers,
+    enabled: !!user?.id,
   });
 
   if (isLoading) {
-    return <div>Loading....</div>;
+    return <div>.............</div>;
   }
 
   if (isError) {
@@ -59,10 +103,9 @@ export default function Sidebar() {
         <div className="flex justify-between">
           <Button
             variant="secondary"
+            type="button"
             className="hover:cursor-pointer"
-            onClick={() => {
-              signOut({ redirectUrl: "/sign-in" });
-            }}
+            onClick={handleSignOut}
           >
             <ArrowBigLeft />
           </Button>
@@ -83,7 +126,7 @@ export default function Sidebar() {
 
       {/* Contacts list */}
       <div className="flex-1 overflow-y-auto">
-        {data.map((conversation: Conversation) => {
+        {(data || []).map((conversation: Conversation) => {
           return conversation.participants.map((item) => {
             const chat: Chat =
               user?.id !== item.id
@@ -94,13 +137,14 @@ export default function Sidebar() {
                     id: item.id,
                   }
                 : null;
+
             return (
               <div id={item.id} key={item.id}>
                 {user?.id !== item.id ? (
                   <div
-                    id={item.id}
-                    key={item.id}
-                    className="flex items-center gap-3 border-b p-4 hover:bg-accent hover:cursor-pointer"
+                    className={`flex items-center gap-3 border p-4 hover:bg-accent hover:cursor-pointer ${
+                      item.id === activeAudioChat ? "bg-green-300 text-black hover:bg-green-500" : ""
+                    }`}
                     onClick={() => {
                       setActivePage(chat);
                     }}

@@ -7,15 +7,18 @@ function UserStatus({ id }: { id: string }) {
   const queryClient = useQueryClient();
 
   const fetchUserStatus = async () => {
+    if (!id) return;
     try {
       const { data } = await axios.get("/api/getOnlineUsers", {
         params: { id },
       });
 
+      console.log("Id: ", id, data);
+
       return data;
     } catch (error) {
       console.log(error);
-      throw new Error("Error", error);
+      throw new Error("Error", error as ErrorOptions);
     }
   };
 
@@ -28,18 +31,16 @@ function UserStatus({ id }: { id: string }) {
   useEffect(() => {
     socket.on("update_user_list", (userId: string) => {
       if (userId === id) {
-        console.log("triggered");
-        queryClient.invalidateQueries({ queryKey: ["user", userId] });
-        fetchUserStatus();
-      } else {
-        console.log("Cant happen");
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["user", id] });
+        }, 300);
       }
     });
 
     return () => {
       socket.off("update_user_list");
     };
-  }, [queryClient, id]);
+  });
 
   if (isLoading) {
     return <h1>Loading....</h1>;

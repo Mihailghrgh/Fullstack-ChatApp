@@ -22,6 +22,7 @@ export function MessageFilePreview({
   const imageTypes = ["jpg", "jpeg", "png", "webp", "gif"];
   const documentTypesPdf = ["pdf", "ppt", "pptx"];
 
+
   return (
     <Dialog>
       <DialogTrigger asChild>
