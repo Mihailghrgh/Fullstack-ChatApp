@@ -1,6 +1,6 @@
 "use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Sun, Moon, ArrowBigLeft } from "lucide-react";
+import { ArrowBigLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
 import axios from "axios";
@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { socket } from "../Socket/Socket";
 import { useEffect } from "react";
 import { setActiveAudioCall } from "@/utils/store";
+import ThemeComponent from "../Theme/ThemeComponent";
 
 type Conversation = {
   createdAt: string;
@@ -109,17 +110,7 @@ export default function Sidebar() {
           >
             <ArrowBigLeft />
           </Button>
-          <Button
-            variant="destructive"
-            className="hover:cursor-pointer"
-            onClick={() =>
-              theme === "dark"
-                ? setTheme(() => "light")
-                : setTheme(() => "dark")
-            }
-          >
-            {theme === "light" ? <Sun /> : <Moon />}
-          </Button>
+          <ThemeComponent />
           <AddNewContact />
         </div>
       </div>
@@ -143,7 +134,9 @@ export default function Sidebar() {
                 {user?.id !== item.id ? (
                   <div
                     className={`flex items-center gap-3 border p-4 hover:bg-accent hover:cursor-pointer ${
-                      item.id === activeAudioChat ? "bg-green-300 text-black hover:bg-green-500" : ""
+                      item.id === activeAudioChat
+                        ? "bg-green-300 text-black hover:bg-green-500"
+                        : ""
                     }`}
                     onClick={() => {
                       setActivePage(chat);
