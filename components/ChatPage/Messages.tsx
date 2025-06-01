@@ -59,7 +59,7 @@ function Messages() {
         params: { id: activeChat?.room_id },
       });
 
-      const messages = data.map((item) => {
+      const messages = data.map((item: any) => {
         const id = item.id;
         const sender = item.email;
         const sender_id = item.sender_id;
