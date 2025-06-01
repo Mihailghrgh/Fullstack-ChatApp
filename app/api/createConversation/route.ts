@@ -24,7 +24,7 @@ export async function POST(_req: NextRequest) {
 
       return NextResponse.json("Action completed");
     }
-  } catch (error: unknown) {
+  } catch (error: any) {
     throw new Error(error);
   }
 }
