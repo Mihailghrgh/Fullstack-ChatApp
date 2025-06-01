@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/schema/schema";
 import { eq } from "drizzle-orm";
 
-export async function POST(_req: NextRequest, _rep: NextResponse) {
+async function POST(_req: NextRequest) {
   const data = await _req.json();
   const { id } = data;
 
