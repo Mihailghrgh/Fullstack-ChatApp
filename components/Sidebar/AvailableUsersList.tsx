@@ -1,13 +1,23 @@
+"use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Users } from "@prisma/client";
 import axios from "axios";
 
-function List({ data }: { data: Users[] }) {
+type Users = {
+  id: string;
+  image: string;
+  email: string;
+  status: boolean;
+};
 
-  const createRoom = async (item: string , image: string ,email: string) => {
+function List({ data }: { data: Users[] }) {
+  const createRoom = async (item: string, image: string, email: string) => {
     try {
-      await axios.post("/api/createConversation", { id: item, image: image , email: email});
+      await axios.post("/api/createConversation", {
+        id: item,
+        image: image,
+        email: email,
+      });
     } catch (error: any) {
       console.log("error occurred: ", error);
       throw new Error("Something happened,", error);
@@ -16,7 +26,7 @@ function List({ data }: { data: Users[] }) {
 
   return (
     <ul className="space-y-3">
-      {data.map((contact) => {
+      {data.map((contact: any) => {
         return (
           <li
             key={contact.id}
@@ -32,7 +42,9 @@ function List({ data }: { data: Users[] }) {
               variant="outline"
               size="sm"
               className="text-green-500 hover:cursor-pointer"
-              onClick={() => createRoom(contact.id , contact.image , contact.email)}
+              onClick={() =>
+                createRoom(contact.id, contact.image, contact.email)
+              }
             >
               Chat
             </Button>
