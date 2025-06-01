@@ -11,7 +11,6 @@ import { useTheme } from "next-themes";
 import { Search } from "lucide-react";
 import { Input } from "../ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users } from "@prisma/client";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useClerk } from "@clerk/nextjs";
@@ -86,7 +85,7 @@ function MobileSideBar() {
 
           {/* Contacts list */}
           <div className="flex-1 overflow-y-auto">
-            {data.map((contact: Users) => (
+            {data.map((contact: any) => (
               <div
                 key={contact.id}
                 className="flex items-center gap-3 border-b p-4 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-900"
