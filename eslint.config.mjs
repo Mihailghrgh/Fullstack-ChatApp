@@ -13,14 +13,23 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     files: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"],
+
     rules: {
-      "no-unused-vars": "1",
-      "no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      // "no-unused-vars": [
+      //   "warn",
+      //   { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      // ],
     },
   },
 ];
 
-export default eslintConfig;
+export default tseslint.config({
+  rules: {
+    // Note: you must disable the base rule as it can report incorrect errors
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error"
+  }
+});
+// export default eslintConfig;
