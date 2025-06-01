@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest) {
       .where(eq(messages.room_Id, id as string));
 
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
     throw new Error("Error occurred: ", error);
   }
