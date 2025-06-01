@@ -16,7 +16,7 @@ const nextHandler = nextApp.getRequestHandler();
 const setUserOffline = async (id) => {
   try {
     await axios.post(
-      "https://fullstack-chat-app-two-pi.vercel.app/api/setUserOffline",
+      "https://fullstack-chatapp-production.up.railway.app/api/setUserOffline",
       { id }
     );
   } catch (error) {
