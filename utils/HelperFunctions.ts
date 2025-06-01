@@ -57,7 +57,7 @@ export async function sendVoiceCall(
       callee: callee,
       offer: offer,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
     throw new Error("An error occurred, ", error);
   }
