@@ -20,7 +20,7 @@ import { MessageCircleHeart } from "lucide-react";
 export default function SignInPage() {
   return (
     <div className="grid w-full grow items-center px-4 sm:justify-center">
-      <SignIn.Root>
+      <SignIn.Root path="/sign-in">
         <Clerk.Loading>
           {(isGlobalLoading) => (
             <>

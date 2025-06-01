@@ -58,7 +58,6 @@ export default function Sidebar() {
 
   const fetchAllUsers = async () => {
     if (!user?.id) {
-      console.log("This is empty ? : ", user?.id);
 
       return;
     }
@@ -66,11 +65,9 @@ export default function Sidebar() {
       const { data } = await axios.get("/api/getAllConversations", {
         params: { data: user?.id },
       });
-      console.log("Triggered all conversation", data);
 
       return data;
     } catch (error) {
-      console.log(error);
       throw new Error(error as string);
     }
   };

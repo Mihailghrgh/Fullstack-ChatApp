@@ -25,7 +25,7 @@ function ReviewSection() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card>
+            <Card className="hover:shadow-xl transition-shadow duration-200">
               <CardHeader>
                 <div className="flex items-center gap-1 mb-2">
                   {[...Array(5)].map((_, i) => (
@@ -34,20 +34,21 @@ function ReviewSection() {
                       className="h-4 w-4 fill-primary text-primary"
                     />
                   ))}
+                  
                 </div>
                 <CardTitle className="text-lg">Sarah Johnson</CardTitle>
                 <CardDescription>Product Manager at TechCorp</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  `Chat Io has revolutionized how our team communicates. The
+                  Chat Io has revolutionized how our team communicates. The
                   interface is intuitive, and the real-time features keep
-                  everyone connected and productive.`
+                  everyone connected and productive.
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-xl transition-shadow duration-200">
               <CardHeader>
                 <div className="flex items-center gap-1 mb-2">
                   {[...Array(5)].map((_, i) => (
@@ -62,14 +63,14 @@ function ReviewSection() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  `As someone who works with multiple clients, Chat Io`s
+                  As someone who works with multiple clients, Chat Io`s
                   organization features help me keep all my conversations
-                  structured and easily accessible.`
+                  structured and easily accessible.
                 </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-xl transition-shadow duration-200">
               <CardHeader>
                 <div className="flex items-center gap-1 mb-2">
                   {[...Array(5)].map((_, i) => (
@@ -84,9 +85,9 @@ function ReviewSection() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  `The security features give me peace of mind when managing
+                  The security features give me peace of mind when managing
                   sensitive community discussions. Chat Io strikes the perfect
-                  balance between functionality and privacy.`
+                  balance between functionality and privacy.
                 </p>
               </CardContent>
             </Card>

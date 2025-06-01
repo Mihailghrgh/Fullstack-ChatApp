@@ -13,8 +13,6 @@ function UserStatus({ id }: { id: string }) {
         params: { id },
       });
 
-      console.log("Id: ", id, data);
-
       return data;
     } catch (error) {
       console.log(error);

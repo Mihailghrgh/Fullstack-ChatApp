@@ -14,7 +14,7 @@ const eslintConfig = [
   {
     files: ["**/*.js", "**/*.ts", "**/*.jsx", "**/*.tsx"],
     rules: {
-      "no-unused-vars": "off",
+      "no-unused-vars": "1",
       "no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },

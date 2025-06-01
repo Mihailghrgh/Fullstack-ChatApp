@@ -12,7 +12,7 @@ export const links = [
   {
     id: 3,
     href: "#reviews",
-    name: "reviews",
+    name: "Reviews",
   },
   {
     id: 4,
@@ -21,8 +21,7 @@ export const links = [
   },
 ];
 
-{
-  /* <Link
+export /* <Link
                   href="#"
                   className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium scroll-smooth"
                 >
@@ -45,5 +44,4 @@ export const links = [
                   className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Contact
-                </Link> */
-}
+                </Link> */ {};

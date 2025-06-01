@@ -6,11 +6,13 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import ThemeComponent from "../Theme/ThemeComponent";
 import { Menu } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
 function Navbar() {
+  const { user } = useUser();
   return (
     <>
-      <nav className="border-b">
+      <nav className="border-b sticky top-0 z-50 w-full backdrop-blur-sm bg-background/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 ">
             <div className="flex items-center">
@@ -31,12 +33,12 @@ function Navbar() {
             </div>
 
             <div className="hidden md:block space-x-2 space-y-2">
-              <Link href="/sign-in">
+              <Link href={user?.id ? "/chat" : "/sign-in"}>
                 <Button variant="ghost" className="hover:cursor-pointer">
                   Sign In
                 </Button>
               </Link>
-              <Link href="/chat">
+              <Link href={user?.id ? "/chat" : "/sign-in"}>
                 <Button className="hover:cursor-pointer">Get Started</Button>
               </Link>
 
