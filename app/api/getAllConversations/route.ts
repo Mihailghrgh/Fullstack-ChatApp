@@ -85,7 +85,7 @@ export async function GET(_req: NextRequest) {
 }
 
 //Helper function to find all conversations in which the user is a part of
-export const GetConversations = async (userId: string) => {
+const GetConversations = async (userId: string) => {
   try {
     const data = await db
       .select()
@@ -93,7 +93,7 @@ export const GetConversations = async (userId: string) => {
       .where(sql`participants @> ${JSON.stringify([{ id: userId }])}::jsonb`);
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.log("An error occurred.......", error);
 
     throw new Error(error);
